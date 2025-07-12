@@ -1,0 +1,6 @@
+@Eciton.API_HostAddress = http://localhost:5134
+
+GET {{Eciton.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
