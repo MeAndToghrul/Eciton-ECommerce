@@ -33,6 +33,9 @@ namespace Eciton.Persistence.Migrations
                     b.Property<int>("ChangeType")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("EntityId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -40,9 +43,6 @@ namespace Eciton.Persistence.Migrations
                     b.Property<string>("EntityName")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("NewValue")
                         .HasColumnType("text");
@@ -52,6 +52,9 @@ namespace Eciton.Persistence.Migrations
 
                     b.Property<string>("PropertyName")
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -67,15 +70,18 @@ namespace Eciton.Persistence.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -100,9 +106,6 @@ namespace Eciton.Persistence.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("boolean");
