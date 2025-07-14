@@ -14,9 +14,7 @@ namespace Eciton.Domain.Entities.Identity
         public bool IsEmailConfirmed { get; set; } = false;
         public bool LockoutEnabled { get; set; } = true;
         public DateTime? LockoutEnd { get; set; }
-        public int AccessFailedCount { get; set; } = 0;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
+        public int AccessFailedCount { get; set; } = 0;        
     }
 
 }
