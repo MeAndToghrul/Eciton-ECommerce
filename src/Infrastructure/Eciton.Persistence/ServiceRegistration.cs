@@ -1,4 +1,7 @@
-﻿using Eciton.Persistence.Contexts;
+﻿using Eciton.Application.Abstractions;
+using Eciton.Domain.Settings;
+using Eciton.Persistence.Contexts;
+using Eciton.Persistence.Implements;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +19,8 @@ public static class ServiceRegistration
     }
     private static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-
+        
+        
     }
     public static IServiceCollection AddPostgreSql(this IServiceCollection services, string connStr)
     {
