@@ -7,6 +7,6 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
 {
     public async Task<Response> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-
+        throw new NotImplementedException("This method is not implemented yet.");
     }
 }
