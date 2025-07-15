@@ -15,17 +15,41 @@ public class AuthService : IAuthService
     private readonly AppDbContext _appDbContext;
     private readonly IMapper _mapper;
     private readonly PasswordService _passwordService;
-    public AuthService(AppDbContext appDbContext,IMapper mapper, PasswordService passwordService)
+    private readonly ITokenService _tokenService;
+    public AuthService(AppDbContext appDbContext,IMapper mapper, PasswordService passwordService, ITokenService tokenService)
     {
         _appDbContext = appDbContext;
         _mapper = mapper;
         _passwordService = passwordService;
+        _tokenService = tokenService;
     }
 
-    public Task<Response> LoginAsync(LoginDTO user)
+    public async Task<Response> LoginAsync(LoginDTO user)
     {
-        throw new NotImplementedException();
+        var email = user.Email.ToLower().Trim();
+
+        var appUser = await _appDbContext.AppUsers
+            .Include(u => u.Role) 
+            .FirstOrDefaultAsync(u => u.Email == email);
+
+        if (appUser == null)
+        {
+            return new Response(ResponseStatusCode.Error, "Email və ya şifrə yanlışdır.");
+        }
+
+        bool passwordValid = _passwordService.VerifyPassword(user.Password, appUser.PasswordHash);
+
+        if (!passwordValid)
+        {
+            return new Response(ResponseStatusCode.Error, "Email və ya şifrə yanlışdır.");
+        }
+
+        var token = _tokenService.GenerateToken(appUser);
+
+        return new Response(ResponseStatusCode.Success, token);
     }
+
+
 
     public async Task<Response> RegisterAsync(RegisterDTO user)
     {
