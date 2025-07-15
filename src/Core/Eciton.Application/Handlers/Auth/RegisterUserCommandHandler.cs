@@ -1,11 +1,12 @@
 ﻿using Eciton.Application.Commands.Auth;
+using Eciton.Application.ResponceObject;
 using MediatR;
 
 namespace Eciton.Application.Handlers.Auth;
-public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, string>
+public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, Response>
 {
-    public Task<string> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<Response> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+
     }
 }

@@ -1,7 +1,8 @@
-﻿using MediatR;
+﻿using Eciton.Application.ResponceObject;
+using MediatR;
 
 namespace Eciton.Application.Commands.Auth;
-public class RegisterUserCommand : IRequest<string>
+public class RegisterUserCommand : IRequest<Response>
 {
     public string Name { get; set; } = null!;
     public string Surname { get; set; } = null!;
