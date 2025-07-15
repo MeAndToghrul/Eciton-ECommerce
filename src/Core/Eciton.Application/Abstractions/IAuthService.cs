@@ -5,4 +5,5 @@ namespace Eciton.Application.Abstractions;
 public interface IAuthService
 {
     Task<Response> RegisterAsync(RegisterDTO user);
+    Task<Response> LoginAsync(LoginDTO user);
 }

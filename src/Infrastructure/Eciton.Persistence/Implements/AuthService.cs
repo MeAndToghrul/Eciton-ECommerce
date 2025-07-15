@@ -21,6 +21,12 @@ public class AuthService : IAuthService
         _mapper = mapper;
         _passwordService = passwordService;
     }
+
+    public Task<Response> LoginAsync(LoginDTO user)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<Response> RegisterAsync(RegisterDTO user)
     {
         var email = user.Email.ToLower().Trim();
@@ -34,8 +40,18 @@ public class AuthService : IAuthService
             return new Response(ResponseStatusCode.Error, "Passwords do not match.");
         }
         var appUser = _mapper.Map<AppUser>(user);
+        appUser.PasswordHash = _passwordService.HashPassword(user.Password);
 
-        user.Password = _passwordService.HashPassword(user.Password);
+        var defaultRoleId = await _appDbContext.AppRoles
+            .Where(r => r.Name == "Guest")
+            .Select(r => r.Id)
+            .FirstOrDefaultAsync();
+        
+        if (defaultRoleId == null)
+        {
+            return new Response(ResponseStatusCode.Error, "Default role 'Guest' not found.");
+        }
+        appUser.RoleId = defaultRoleId!;
 
         await _appDbContext.AddAsync(appUser);
         await _appDbContext.SaveChangesAsync();
