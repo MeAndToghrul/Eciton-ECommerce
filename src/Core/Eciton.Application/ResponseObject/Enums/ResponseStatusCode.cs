@@ -5,5 +5,9 @@ public enum ResponseStatusCode
     ValidationError = 2,
     NotFound = 3,
     Error = 4,
-    Forbidden = 5
+    Forbidden = 5,
+    Unauthorized = 6,
+    Conflict = 7,
+    Created = 8,
+    NoContent = 9
 }
