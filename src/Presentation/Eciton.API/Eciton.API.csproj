@@ -17,10 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Infrastructure\Eciton.Infrastructure\Eciton.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Eciton.Persistence\Eciton.Persistence.csproj" />
   </ItemGroup>

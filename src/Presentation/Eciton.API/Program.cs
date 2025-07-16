@@ -1,13 +1,14 @@
+using Eciton.Domain.Settings;
 using Eciton.Persistence;
-using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
-using Eciton.Application.Abstractions;
-using Eciton.Domain.Settings;
-using Eciton.Persistence.Implements;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddBlServices(builder.Configuration);
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -48,7 +49,6 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddPostgreSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-builder.Services.AddScoped<ITokenService, TokenService>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 
@@ -87,7 +87,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();
