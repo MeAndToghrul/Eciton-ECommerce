@@ -1,6 +1,7 @@
 ﻿using Eciton.Application.Abstractions;
 using Eciton.Application.Helpers;
 using Eciton.Application.MapperProfiles;
+using Eciton.Application.Options;
 using Eciton.Persistence.Contexts;
 using Eciton.Persistence.Implements;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@ public static class ServiceRegistration
     {
         return services.AddServices(configuration)
                        .AddAutoMapper(typeof(AuthMappingProfile).Assembly);
+        
     }
 
     public static IServiceCollection AddFluentValidation(this IServiceCollection services)
@@ -24,6 +26,12 @@ public static class ServiceRegistration
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<PasswordService>();
+        services.AddScoped<IEmailService, EmailService>();
+
+
+
+
+        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.Position));
         return services;
     }
 

@@ -8,6 +8,7 @@ using Eciton.Application.ResponceObject.Enums;
 using Eciton.Domain.Entities.Identity;
 using Eciton.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
 
 namespace Eciton.Persistence.Implements;
 public class AuthService : IAuthService
@@ -16,12 +17,18 @@ public class AuthService : IAuthService
     private readonly IMapper _mapper;
     private readonly PasswordService _passwordService;
     private readonly ITokenService _tokenService;
-    public AuthService(AppDbContext appDbContext,IMapper mapper, PasswordService passwordService, ITokenService tokenService)
+    private readonly IEmailService _emailService;
+    public AuthService(AppDbContext appDbContext,
+        IMapper mapper, 
+        PasswordService passwordService, 
+        ITokenService tokenService,
+        IEmailService emailService)
     {
         _appDbContext = appDbContext;
         _mapper = mapper;
         _passwordService = passwordService;
         _tokenService = tokenService;
+        _emailService = emailService;
     }
 
     public async Task<Response> LoginAsync(LoginDTO user)
@@ -79,6 +86,15 @@ public class AuthService : IAuthService
 
         await _appDbContext.AddAsync(appUser);
         await _appDbContext.SaveChangesAsync();
+
+        MailMessage msg = new MailMessage
+        {
+            Subject = "Welcome to Eciton",
+            Body = $"Hello {appUser.FullName},\n\nThank you for registering on Eciton. Your account has been created successfully.\n\nBest regards,\nEciton Team",
+            To = { new MailAddress(appUser.Email, appUser.FullName) },
+        };
+
+        await _emailService.SendEmailAsync(msg);
 
         return new Response(ResponseStatusCode.Success, "User registered successfully.");
     }
