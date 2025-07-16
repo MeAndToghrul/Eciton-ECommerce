@@ -2,6 +2,7 @@
 using Eciton.Application.Helpers;
 using Eciton.Application.MapperProfiles;
 using Eciton.Application.Options;
+using Eciton.Application.Validators.Auth;
 using Eciton.Domain.Settings;
 using Eciton.Persistence.Contexts;
 using Eciton.Persistence.Implements;
@@ -24,7 +25,7 @@ public static class ServiceRegistration
     public static IServiceCollection AddFluentValidation(this IServiceCollection services)
     {
         services.AddFluentValidationAutoValidation();
-        services.AddValidatorsFromAssemblyContaining(typeof(ServiceRegistration));
+        services.AddValidatorsFromAssemblyContaining(typeof(RegisterDtoValidator));
         return services;
     }
 

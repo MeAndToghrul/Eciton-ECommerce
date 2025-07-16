@@ -1,5 +1,7 @@
+using Eciton.Application.Validators.Auth;
 using Eciton.Domain.Settings;
 using Eciton.Persistence;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
