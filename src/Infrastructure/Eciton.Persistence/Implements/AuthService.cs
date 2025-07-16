@@ -37,7 +37,7 @@ public class AuthService : IAuthService
             return new Response(ResponseStatusCode.Error, "Email və ya şifrə yanlışdır.");
         }
 
-        bool passwordValid = _passwordService.VerifyPassword(user.Password, appUser.PasswordHash);
+        bool passwordValid = _passwordService.VerifyPassword(appUser.PasswordHash,user.Password);
 
         if (!passwordValid)
         {

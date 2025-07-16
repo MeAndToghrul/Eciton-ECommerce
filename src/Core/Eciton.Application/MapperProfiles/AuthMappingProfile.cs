@@ -15,7 +15,7 @@ public class AuthMappingProfile : Profile
                     opt.MapFrom(src => src.Email.Trim()))
 
                 .ForMember(dest => dest.NormalizedEmail, opt =>
-                    opt.MapFrom(src => src.Email.ToLower().Trim()))
+                    opt.MapFrom(src => src.Email.ToUpper().Trim()))
 
                 .ForMember(dest => dest.PasswordHash, opt =>
                     opt.Ignore())
