@@ -1,4 +1,5 @@
 ﻿using Eciton.Application.Abstractions;
+using Eciton.Application.Handlers.Auth;
 using Eciton.Application.Helpers;
 using Eciton.Application.MapperProfiles;
 using Eciton.Application.Options;
@@ -36,7 +37,10 @@ public static class ServiceRegistration
         services.AddScoped<PasswordService>();
         services.AddScoped<IEmailService, EmailService>();
 
-
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(LoginUserCommandHandler).Assembly);
+        });
 
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
