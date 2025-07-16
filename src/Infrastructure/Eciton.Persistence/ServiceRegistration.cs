@@ -2,10 +2,16 @@
 using Eciton.Application.Helpers;
 using Eciton.Application.MapperProfiles;
 using Eciton.Application.Options;
+using Eciton.Domain.Settings;
 using Eciton.Persistence.Contexts;
 using Eciton.Persistence.Implements;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 namespace Eciton.Persistence;
 public static class ServiceRegistration
 {
@@ -13,11 +19,12 @@ public static class ServiceRegistration
     {
         return services.AddServices(configuration)
                        .AddAutoMapper(typeof(AuthMappingProfile).Assembly);
-        
     }
 
     public static IServiceCollection AddFluentValidation(this IServiceCollection services)
-    {        
+    {
+        services.AddFluentValidationAutoValidation();
+        services.AddValidatorsFromAssemblyContaining(typeof(ServiceRegistration));
         return services;
     }
 
@@ -30,7 +37,29 @@ public static class ServiceRegistration
 
 
 
+        services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
+        var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>();
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+                ValidateIssuer = true,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidateAudience = true,
+                ValidAudience = jwtSettings.Audience,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+        });
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.Position));
         return services;
     }

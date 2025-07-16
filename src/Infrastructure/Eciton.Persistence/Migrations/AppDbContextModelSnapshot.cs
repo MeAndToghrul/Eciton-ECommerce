@@ -30,19 +30,23 @@ namespace Eciton.Persistence.Migrations
                     b.Property<DateTime>("ChangeDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ChangeType")
-                        .HasColumnType("integer");
+                    b.Property<string>("ChangeType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("EntityId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("EntityName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("NewValue")
                         .HasColumnType("text");
@@ -51,18 +55,20 @@ namespace Eciton.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PropertyName")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("Eciton.Domain.Entities.Identity.AppRole", b =>
@@ -74,18 +80,20 @@ namespace Eciton.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppRoles");
+                    b.ToTable("AppRoles", (string)null);
                 });
 
             modelBuilder.Entity("Eciton.Domain.Entities.Identity.AppUser", b =>
@@ -96,16 +104,21 @@ namespace Eciton.Persistence.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
+                    b.Property<string>("AppRoleId")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("boolean");
@@ -118,7 +131,8 @@ namespace Eciton.Persistence.Migrations
 
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -133,17 +147,26 @@ namespace Eciton.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AppRoleId");
+
+                    b.HasIndex("NormalizedEmail")
+                        .IsUnique();
+
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AppUsers");
+                    b.ToTable("AppUsers", (string)null);
                 });
 
             modelBuilder.Entity("Eciton.Domain.Entities.Identity.AppUser", b =>
                 {
-                    b.HasOne("Eciton.Domain.Entities.Identity.AppRole", "Role")
+                    b.HasOne("Eciton.Domain.Entities.Identity.AppRole", null)
                         .WithMany("Users")
+                        .HasForeignKey("AppRoleId");
+
+                    b.HasOne("Eciton.Domain.Entities.Identity.AppRole", "Role")
+                        .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Role");

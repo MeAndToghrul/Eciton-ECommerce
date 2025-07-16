@@ -47,30 +47,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddPostgreSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
-
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-
-var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
-        ValidateIssuer = true,
-        ValidIssuer = jwtSettings.Issuer,
-        ValidateAudience = true,
-        ValidAudience = jwtSettings.Audience,
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
-    };
-});
+builder.Services.AddFluentValidation();
 
 var app = builder.Build();
 
