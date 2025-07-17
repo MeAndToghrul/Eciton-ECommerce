@@ -1,14 +1,12 @@
-using Eciton.Application.Validators.Auth;
-using Eciton.Domain.Settings;
+using Eciton.Application.Abstractions;
+using Eciton.Infrastructure.Context;
+using Eciton.Infrastructure.EventBus;
 using Eciton.Persistence;
 using Eciton.Persistence.Contexts;
+using Eciton.Infrastructure;
+using Eciton.Persistence.SeedDatas;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +15,9 @@ builder.Services.AddBlServices(builder.Configuration);
 builder.Services.AddMongoDb(builder.Configuration);
 builder.Services.AddPostgreSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
 builder.Services.AddFluentValidation();
+builder.Services.AddScoped<IEventBus, InMemoryEventBus>();
+
+
 
 
 builder.Services.AddControllers()
@@ -58,6 +59,15 @@ builder.Services.AddSwaggerGen(c =>
 
 
 var app = builder.Build();
+
+using var scope = app.Services.CreateScope();
+var services = scope.ServiceProvider;
+
+// SQL Seed
+var sqlContext = services.GetRequiredService<AppDbContext>();
+var eventBus = services.GetRequiredService<IEventBus>();
+await SeedData.SeedRolesAndAdminAsync(sqlContext,eventBus);
+
 
 app.UseStaticFiles();
 
