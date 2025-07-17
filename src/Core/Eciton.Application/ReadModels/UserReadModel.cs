@@ -15,32 +15,10 @@ public class UserReadModel
     [BsonElement("email")]
     public string Email { get; set; } = null!;
 
-    [BsonElement("normalizedEmail")]
-    public string NormalizedEmail { get; set; } = null!;
-
-    [BsonElement("passwordHash")]
-    public string PasswordHash { get; set; } = null!;
-
     [BsonElement("roleId")]
     public string RoleId { get; set; } = null!;
 
-    [BsonElement("roleName")]
-    public string RoleName { get; set; } = null!;
-
     [BsonElement("isEmailConfirmed")]
     public bool IsEmailConfirmed { get; set; }
-
-    [BsonElement("lockoutEnabled")]
-    public bool LockoutEnabled { get; set; }
-
-    [BsonElement("lockoutEnd")]
-    [BsonIgnoreIfNull]
-    public DateTime? LockoutEnd { get; set; }
-
-    [BsonElement("accessFailedCount")]
-    public int AccessFailedCount { get; set; }
-
-    [BsonElement("createdAt")]
-    public DateTime CreatedAt { get; set; }
 }
 

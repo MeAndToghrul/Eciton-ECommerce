@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Eciton.Application.Abstractions;
 using Eciton.Application.DTOs.Auth;
+using Eciton.Application.Events;
 using Eciton.Application.Helpers;
 using Eciton.Application.ResponceObject;
 using Eciton.Application.ResponceObject.Enums;
@@ -8,7 +9,6 @@ using Eciton.Domain.Entities.Identity;
 using Eciton.Infrastructure.Mongo.ReadModels;
 using Eciton.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
 using System.Net.Mail;
 
 namespace Eciton.Persistence.Implements;
@@ -19,37 +19,30 @@ public class AuthService : IAuthService
     private readonly PasswordService _passwordService;
     private readonly ITokenService _tokenService;
     private readonly IEmailService _emailService;
-    private readonly MongoDbContext _mongoDbContext;
+    private readonly IEventBus _eventBus;
     public AuthService(AppDbContext appDbContext,
         IMapper mapper,
         PasswordService passwordService,
         ITokenService tokenService,
         IEmailService emailService,
-        MongoDbContext mongoDbContext )
+        IEventBus eventBus)
     {
         _appDbContext = appDbContext;
         _mapper = mapper;
         _passwordService = passwordService;
         _tokenService = tokenService;
         _emailService = emailService;
-        _mongoDbContext = mongoDbContext;
+        _eventBus = eventBus;
     }
 
     public async Task<Response> LoginAsync(LoginDTO user)
     {
         var email = user.Email.ToLower().Trim();
 
-        var appUser = await _mongoDbContext.Users
-            .Find(u => u.Email == email)
+        var appUser = await _appDbContext.AppUsers
+            .Where(u => u.Email == email)
+            .Include(x => x.Role)
             .FirstOrDefaultAsync();
-
-        //var role = await _mongoDbContext.Roles
-        //    .Find(r => r.Id == appUser.RoleId)
-        //    .FirstOrDefaultAsync();
-        //if (role == null)
-        //    return new Response(ResponseStatusCode.Error, "Role not found.");
-
-        appUser.RoleName = "Guest";
 
         if (appUser == null)
         {
@@ -99,22 +92,14 @@ public class AuthService : IAuthService
         await _appDbContext.AddAsync(appUser);
         await _appDbContext.SaveChangesAsync();
 
-        var userReadModel = new UserReadModel
-        {
-            Id = appUser.Id,
-            FullName = appUser.FullName,
-            Email = user.Email,
-            NormalizedEmail = appUser.Email.ToLower(),
-            PasswordHash = appUser.PasswordHash,
-            RoleId = appUser.RoleId,
-            RoleName = "Guest",
-            IsEmailConfirmed = false,
-            LockoutEnabled = true,
-            AccessFailedCount = 0,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await _mongoDbContext.Users.InsertOneAsync(userReadModel);
+        await _eventBus.PublishAsync(new UserRegisteredEvent
+            (
+            appUser.Id,
+            appUser.FullName,
+            appUser.Email,
+            appUser.RoleId,
+            appUser.IsEmailConfirmed
+            ));
 
         MailMessage msg = new MailMessage
         {

@@ -38,11 +38,5 @@ public class AuthMappingProfile : Profile
 
                 .ForMember(dest => dest.AccessFailedCount, opt =>
                     opt.MapFrom(src => 0));
-
-
-        CreateMap<AppUser, UserReadModel>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore()) // Mongo Id verəcək
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
-
     }
 }

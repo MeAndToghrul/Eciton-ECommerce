@@ -20,7 +20,7 @@ namespace Eciton.Persistence.Implements
             _jwtSettings = jwtOptions.Value;
         }
 
-        public string GenerateToken(UserReadModel user)
+        public string GenerateToken(AppUser user)
         {
             var authClaims = new List<Claim>
             {
@@ -29,7 +29,7 @@ namespace Eciton.Persistence.Implements
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, $"{user.FullName}"),
-                new Claim(ClaimTypes.Role, user.RoleName ?? "Guest")
+                new Claim(ClaimTypes.Role, user.Role.Name ?? "Guest")
             };
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
