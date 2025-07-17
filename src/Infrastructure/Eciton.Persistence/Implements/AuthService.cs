@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Eciton.Application.Abstractions;
 using Eciton.Application.DTOs.Auth;
-using Eciton.Application.Exceptions.Commons;
 using Eciton.Application.Helpers;
 using Eciton.Application.ResponceObject;
 using Eciton.Application.ResponceObject.Enums;
@@ -11,7 +10,6 @@ using Eciton.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using System.Net.Mail;
-using System.Threading;
 
 namespace Eciton.Persistence.Implements;
 public class AuthService : IAuthService

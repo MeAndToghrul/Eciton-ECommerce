@@ -80,5 +80,16 @@ public static class ServiceRegistration
         services.AddNpgsql<AppDbContext>(connStr);
         return services;
     }
+    
+    public static IServiceCollection AddMongoDb(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton<MongoDbContext>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;
+            return new MongoDbContext(settings);
+        });
+        services.Configure<MongoSettings>(configuration.GetSection("MongoSettings"));
+        return services;
+    }
 }
 

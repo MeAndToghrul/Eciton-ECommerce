@@ -14,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddBlServices(builder.Configuration);
+builder.Services.AddMongoDb(builder.Configuration);
+builder.Services.AddPostgreSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
+builder.Services.AddFluentValidation();
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -21,12 +25,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.WriteIndented = true;
     });
-builder.Services.AddSingleton<MongoDbContext>(sp =>
-{
-    var settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;
-    return new MongoDbContext(settings);
-});
-builder.Services.Configure<MongoSettings>(builder.Configuration.GetSection("MongoSettings"));
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -56,8 +55,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddPostgreSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
-builder.Services.AddFluentValidation();
+
 
 var app = builder.Build();
 
