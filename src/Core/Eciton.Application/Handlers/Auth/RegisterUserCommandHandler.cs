@@ -20,7 +20,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
             Surname = request.Surname,
             Email = request.Email,
             Password = request.Password,
-            ConfirmPassword = request.Password
+            ConfirmPassword = request.ConfirmPassword
         });
     }
 }

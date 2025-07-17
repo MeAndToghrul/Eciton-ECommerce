@@ -12,6 +12,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 namespace Eciton.Persistence;
@@ -66,6 +67,11 @@ public static class ServiceRegistration
             };
         });
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.Position));
+
+
+        
+
+
         return services;
     }
 

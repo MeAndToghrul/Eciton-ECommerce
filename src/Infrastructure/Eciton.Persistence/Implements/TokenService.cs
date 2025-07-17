@@ -1,6 +1,7 @@
 ﻿using Eciton.Application.Abstractions;
 using Eciton.Domain.Entities.Identity;
 using Eciton.Domain.Settings;
+using Eciton.Infrastructure.Mongo.ReadModels;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -19,7 +20,7 @@ namespace Eciton.Persistence.Implements
             _jwtSettings = jwtOptions.Value;
         }
 
-        public string GenerateToken(AppUser user)
+        public string GenerateToken(UserReadModel user)
         {
             var authClaims = new List<Claim>
             {
@@ -28,7 +29,7 @@ namespace Eciton.Persistence.Implements
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, $"{user.FullName}"),
-                new Claim(ClaimTypes.Role, user.Role?.Name ?? "Guest")
+                new Claim(ClaimTypes.Role, user.RoleName ?? "Guest")
             };
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));

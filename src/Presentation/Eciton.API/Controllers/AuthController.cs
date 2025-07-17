@@ -48,7 +48,5 @@ namespace Eciton.API.Controllers
                 return Ok(response);
             return BadRequest(response);
         }
-
-
     }
 }

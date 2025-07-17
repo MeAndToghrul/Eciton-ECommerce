@@ -1,6 +1,6 @@
-﻿using Eciton.Domain.Entities.Identity;
+﻿using Eciton.Infrastructure.Mongo.ReadModels;
 namespace Eciton.Application.Abstractions;
 public interface ITokenService
 {        
-    string GenerateToken(AppUser user);
+    string GenerateToken(UserReadModel user);
 }
