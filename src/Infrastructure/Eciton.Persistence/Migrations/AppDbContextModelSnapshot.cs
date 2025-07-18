@@ -104,9 +104,6 @@ namespace Eciton.Persistence.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
-                    b.Property<string>("AppRoleId")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -147,8 +144,6 @@ namespace Eciton.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppRoleId");
-
                     b.HasIndex("NormalizedEmail")
                         .IsUnique();
 
@@ -159,12 +154,8 @@ namespace Eciton.Persistence.Migrations
 
             modelBuilder.Entity("Eciton.Domain.Entities.Identity.AppUser", b =>
                 {
-                    b.HasOne("Eciton.Domain.Entities.Identity.AppRole", null)
-                        .WithMany("Users")
-                        .HasForeignKey("AppRoleId");
-
                     b.HasOne("Eciton.Domain.Entities.Identity.AppRole", "Role")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();

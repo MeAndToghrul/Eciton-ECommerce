@@ -33,6 +33,11 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.Property(x => x.RoleId)
             .IsRequired();
 
+        builder.HasOne(x => x.Role)
+            .WithMany(x=>x.Users)
+            .HasForeignKey(x => x.RoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(x => x.IsEmailConfirmed)
             .IsRequired();
 
@@ -52,10 +57,6 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.Property(x => x.UpdatedAt)
             .HasColumnType("timestamp with time zone");
 
-        builder.HasOne(x => x.Role)
-            .WithMany()
-            .HasForeignKey(x => x.RoleId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.NormalizedEmail).IsUnique();
     }
