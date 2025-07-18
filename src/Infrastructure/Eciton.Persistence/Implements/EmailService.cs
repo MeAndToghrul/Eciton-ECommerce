@@ -13,7 +13,7 @@ public class EmailService : IEmailService
     public EmailService(IOptions<SmtpOptions> options)
     {
         _options = options.Value;
-    }
+    }    
 
     public async Task<Response> SendVerificationEmailAsync(string email, string token)
     {

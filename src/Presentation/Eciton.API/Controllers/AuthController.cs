@@ -65,5 +65,20 @@ namespace Eciton.API.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpPost("resend-email-verification")]
+        [SwaggerOperation(
+        Summary = "Resends the email verification link.",
+        Description = "This endpoint resends a verification email to the user if their email is not yet confirmed."
+        )]
+        public async Task<IActionResult> ResendEmailVerification([FromBody] ResendEmailVerificationCommand command)
+        {
+            var response = await _mediator.Send(command);
+
+            if (response.ResponseStatusCode == ResponseStatusCode.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

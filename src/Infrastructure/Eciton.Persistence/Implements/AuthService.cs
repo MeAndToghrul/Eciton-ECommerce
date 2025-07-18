@@ -113,6 +113,28 @@ public class AuthService : IAuthService
         return new Response(ResponseStatusCode.Success, "User registered successfully. Please check your email to verify your account.");
 
     }
+
+    public async Task<Response> ResendEmailVerificationAsync(string email)
+    {
+        email = email.ToLower().Trim();
+
+        var user = await _appDbContext.AppUsers
+            .FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user == null)
+            return new Response(ResponseStatusCode.Error, "İstifadəçi tapılmadı.");
+
+        if (user.IsEmailConfirmed)
+            return new Response(ResponseStatusCode.Success, "Email artıq təsdiqlənmişdir.");
+
+        var token = _tokenService.GenerateEmailVerificationToken(user.Id, user.Email);
+
+        await _emailService.SendVerificationEmailAsync(user.Email, token);
+
+        return new Response(ResponseStatusCode.Success, "Email təsdiqləmə linki yenidən göndərildi.");
+    }
+
+
     public async Task<Response> VerifyEmailAsync(string token)
     {
         try
