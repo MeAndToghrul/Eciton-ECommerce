@@ -4,17 +4,18 @@ using Eciton.Application.DTOs.Auth;
 using Eciton.Application.ResponceObject;
 using MediatR;
 
-namespace Eciton.Application.Handlers.Auth;
 public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, Response>
 {
     private readonly IAuthService _authService;
+
     public RegisterUserCommandHandler(IAuthService authService)
     {
         _authService = authService;
     }
+
     public async Task<Response> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        return await _authService.RegisterAsync(new RegisterDTO
+        var registerResponse = await _authService.RegisterAsync(new RegisterDTO
         {
             Name = request.Name,
             Surname = request.Surname,
@@ -22,5 +23,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
             Password = request.Password,
             ConfirmPassword = request.ConfirmPassword
         });
+
+        return registerResponse;
     }
 }

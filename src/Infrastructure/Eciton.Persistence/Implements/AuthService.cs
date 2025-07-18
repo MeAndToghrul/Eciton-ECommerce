@@ -6,10 +6,14 @@ using Eciton.Application.Helpers;
 using Eciton.Application.ResponceObject;
 using Eciton.Application.ResponceObject.Enums;
 using Eciton.Domain.Entities.Identity;
+using Eciton.Domain.Settings;
 using Eciton.Infrastructure.Mongo.ReadModels;
 using Eciton.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Mail;
+using System.Text;
 
 namespace Eciton.Persistence.Implements;
 public class AuthService : IAuthService
@@ -71,10 +75,12 @@ public class AuthService : IAuthService
         {
             return new Response(ResponseStatusCode.Error, "Email already exists.");
         }
+
         if (user.Password != user.ConfirmPassword)
         {
             return new Response(ResponseStatusCode.Error, "Passwords do not match.");
         }
+
         var appUser = _mapper.Map<AppUser>(user);
         appUser.PasswordHash = _passwordService.HashPassword(user.Password);
 
@@ -87,29 +93,60 @@ public class AuthService : IAuthService
         {
             return new Response(ResponseStatusCode.Error, "Default role 'Guest' not found.");
         }
-        appUser.RoleId = defaultRoleId!;
 
+        appUser.RoleId = defaultRoleId!;
         await _appDbContext.AddAsync(appUser);
         await _appDbContext.SaveChangesAsync();
 
-        await _eventBus.PublishAsync(new UserRegisteredEvent
-            (
+        await _eventBus.PublishAsync(new UserRegisteredEvent(
             appUser.Id,
             appUser.FullName,
             appUser.Email,
             appUser.RoleId,
             appUser.IsEmailConfirmed
-            ));
+        ));
 
-        MailMessage msg = new MailMessage
-        {
-            Subject = "Welcome to Eciton",
-            Body = $"Hello {appUser.FullName},\n\nThank you for registering on Eciton. Your account has been created successfully.\n\nBest regards,\nEciton Team",
-            To = { new MailAddress(appUser.Email, appUser.FullName) },
-        };
+        var verificationToken = _tokenService.GenerateEmailVerificationToken(appUser.Id, appUser.Email);
 
-        await _emailService.SendEmailAsync(msg);
+        await _emailService.SendVerificationEmailAsync(appUser.Email, verificationToken);
 
-        return new Response(ResponseStatusCode.Success, "User registered successfully.");
+        return new Response(ResponseStatusCode.Success, "User registered successfully. Please check your email to verify your account.");
+
     }
+    public async Task<Response> VerifyEmailAsync(string token)
+    {
+        try
+        {
+            var (userId, email) = _tokenService.ValidateEmailVerificationToken(token);
+
+            var user = await _appDbContext.AppUsers.FindAsync(userId);
+            if (user == null)
+                return new Response(ResponseStatusCode.Error, "İstifadəçi tapılmadı və ya token yanlışdır.");
+
+            if (!string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase))
+                return new Response(ResponseStatusCode.Error, "Token uyğun email ilə uyğunlaşmır.");
+
+            if (user.IsEmailConfirmed)
+                return new Response(ResponseStatusCode.Success, "Email artıq təsdiqlənmişdir.");
+
+            user.IsEmailConfirmed = true;
+            await _appDbContext.SaveChangesAsync();
+
+            return new Response(ResponseStatusCode.Success, "Email uğurla təsdiqləndi.");
+        }
+        catch (SecurityTokenException ex)
+        {
+            return new Response(ResponseStatusCode.Error, $"Token xətası: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            return new Response(ResponseStatusCode.Error, "Email təsdiqləmə zamanı xəta baş verdi.");
+        }
+
+    }
+
+
+
+
+
 }

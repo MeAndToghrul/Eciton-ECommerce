@@ -2,6 +2,7 @@
 using Eciton.Application.Commands.Auth;
 using Eciton.Application.DTOs.Auth;
 using Eciton.Application.ResponceObject.Enums;
+using Eciton.Persistence.Implements;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -46,6 +47,22 @@ namespace Eciton.API.Controllers
 
             if (response.ResponseStatusCode == ResponseStatusCode.Success)
                 return Ok(response);
+            return BadRequest(response);
+        }
+
+        [HttpGet("verify-email")]
+        [SwaggerOperation(
+            Summary = "Verifies user's email address.",
+            Description = "This endpoint is used to confirm user's email address via a verification token sent to their email."
+        )]
+        public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+        {
+            var command = new VerifyEmailCommand { Token = token };
+            var response = await _mediator.Send(command);
+
+            if (response.ResponseStatusCode == ResponseStatusCode.Success)
+                return Ok(response);
+
             return BadRequest(response);
         }
     }
