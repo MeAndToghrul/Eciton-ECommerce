@@ -13,7 +13,8 @@ public class EmailService : IEmailService
     public EmailService(IOptions<SmtpOptions> options)
     {
         _options = options.Value;
-    }    
+    }
+
 
     public async Task<Response> SendVerificationEmailAsync(string email, string token)
     {
@@ -102,4 +103,94 @@ public class EmailService : IEmailService
         await smtp.SendMailAsync(mail);
         return new Response(ResponseStatusCode.Success, "Verification email sent successfully.");
     }
+
+    public async Task<Response> SendPasswordResetEmailAsync(string email, string token)
+    {
+        var resetUrl = $"https://localhost:7029/reset-password?token={token}";
+
+        var mail = new MailMessage
+        {
+            From = new MailAddress(_options.Sender),
+            Subject = "🔒 Şifrə Yeniləmə Sorğusu",
+            Body = $@"
+        <div class='email-wrapper' style='
+          max-width: 620px;
+          margin: 40px auto;
+          background-color: #ffffff;
+          border-radius: 10px;
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+          overflow: hidden;
+          font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+        '>
+          <div class='email-header' style='
+            background-color: #dc3545;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+          '>
+            <h1 style='
+              margin: 0;
+              font-size: 24px;
+              font-weight: 600;
+            '>🔒 Şifrə Yeniləmə</h1>
+          </div>
+          <div class='email-body' style='
+            padding: 30px 40px;
+            text-align: center;
+          '>
+            <p style='
+              color: #444;
+              font-size: 16px;
+              line-height: 1.6;
+              margin-bottom: 25px;
+            '>
+              Salam,<br />
+              Aşağıdakı düyməyə klikləyərək şifrənizi yeniləyə bilərsiniz.
+            </p>
+            <a href='{resetUrl}' class='btn' style='
+              display: inline-block;
+              padding: 14px 30px;
+              background-color: #007bff;
+              color: #fff;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: 600;
+              font-size: 17px;
+              transition: all 0.3s ease;
+            ' target='_blank'>
+              Şifrəmi Yenilə
+            </a>
+            <p style='margin-top: 30px; color: #999;'>
+              Əgər bu sorğunu siz etməmisinizsə, bu məktubu sadəcə nəzərə almayın.
+            </p>
+          </div>
+          <div class='email-footer' style='
+            background-color: #f0f0f0;
+            padding: 25px;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+          '>
+            Bu mesaj <strong>Eciton</strong> tərəfindən göndərilmişdir.<br />
+            Suallar üçün: <a href='mailto:backend.dev.net@gmail.com' style='color: #007bff;'>backend.dev.net@gmail.com</a><br />
+            &copy; 2025 Eciton. Bütün hüquqlar qorunur.
+          </div>
+        </div>
+        ",
+            IsBodyHtml = true
+        };
+
+        mail.To.Add(email);
+
+        using var smtp = new SmtpClient(_options.Host, _options.Port)
+        {
+            EnableSsl = true,
+            Credentials = new NetworkCredential(_options.Sender, _options.Password)
+        };
+
+        await smtp.SendMailAsync(mail);
+        return new Response(ResponseStatusCode.Success, "Password reset email sent successfully.");
+    }
+
+
 }

@@ -80,5 +80,35 @@ namespace Eciton.API.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpPost("reset-password")]
+        [SwaggerOperation(
+    Summary = "Sends a password reset email.",
+    Description = "Generates a password reset token and sends it to the user's email."
+)]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestCommand command)
+        {
+            var response = await _mediator.Send(command);
+
+            if (response.ResponseStatusCode == ResponseStatusCode.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [HttpPost("confirm-reset-password")]
+        [SwaggerOperation(
+            Summary = "Confirms password reset with token and new password.",
+            Description = "Accepts token, new password and confirmation to reset the user's password."
+        )]
+        public async Task<IActionResult> ConfirmResetPassword([FromBody] ConfirmResetPasswordCommand command)
+        {
+            var response = await _mediator.Send(command);
+
+            if (response.ResponseStatusCode == ResponseStatusCode.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

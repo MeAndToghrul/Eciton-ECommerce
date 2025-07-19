@@ -165,9 +165,55 @@ public class AuthService : IAuthService
             return new Response(ResponseStatusCode.Error, "An error occurred during email verification.");
         }
     }
+    public async Task<Response> ResetPasswordAsync(string email)
+    {
+        email = email.Trim().ToLower();
 
+        var user = await _appDbContext.AppUsers
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
+        if (user == null)
+            return new Response(ResponseStatusCode.Error, "User not found.");
 
+        if (!user.IsEmailConfirmed)
+            return new Response(ResponseStatusCode.EmailNotConfirmed, "Email not confirmed.");
 
+        var token = _tokenService.GeneratePasswordResetToken(user.Id, user.Email);
+
+        await _emailService.SendPasswordResetEmailAsync(user.Email, token);
+
+        return new Response(ResponseStatusCode.Success, "Password reset link has been sent to your email.");
+    }
+
+    public async Task<Response> ConfirmResetPasswordAsync(ResetPasswordDTO model)
+    {
+        try
+        {
+            var (userId, email) = _tokenService.ValidatePasswordResetToken(model.Token);
+
+            var user = await _appDbContext.AppUsers.FindAsync(userId);
+            if (user == null)
+                return new Response(ResponseStatusCode.Error, "User not found.");
+
+            if (!string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase))
+                return new Response(ResponseStatusCode.Error, "Invalid token.");
+
+            if (model.NewPassword != model.ConfirmPassword)
+                return new Response(ResponseStatusCode.Error, "New passwords do not match.");
+
+            user.PasswordHash = _passwordService.HashPassword(model.NewPassword);
+            await _appDbContext.SaveChangesAsync();
+
+            return new Response(ResponseStatusCode.Success, "Password has been reset successfully.");
+        }
+        catch (SecurityTokenException ex)
+        {
+            return new Response(ResponseStatusCode.Error, $"Token error: {ex.Message}");
+        }
+        catch (Exception)
+        {
+            return new Response(ResponseStatusCode.Error, "An error occurred during password reset.");
+        }
+    }
 
 }

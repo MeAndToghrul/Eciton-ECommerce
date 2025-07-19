@@ -42,6 +42,7 @@ public class TokenService : ITokenService
         return tokenHandler.WriteToken(token);
     }
 
+
     public string GenerateToken(AppUser user)
     {
         var authClaims = new List<Claim>
@@ -98,6 +99,66 @@ public class TokenService : ITokenService
 
         return (userId, email);
     }
+    public string GeneratePasswordResetToken(string userId, string email)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[]
+            {
+            new Claim(JwtRegisteredClaimNames.Sub, userId),
+            new Claim(JwtRegisteredClaimNames.Email, email),
+            new Claim("token_type", "password_reset")
+        }),
+            Expires = DateTime.UtcNow.AddMinutes(30), 
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature
+            ),
+            Issuer = _jwtSettings.Issuer,
+            Audience = _jwtSettings.Audience
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
+
+    public (string userId, string email) ValidatePasswordResetToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
+
+        var validationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = _jwtSettings.Issuer,
+            ValidAudience = _jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.Zero 
+        };
+
+        var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+
+        var tokenType = principal.FindFirst("token_type")?.Value;
+        if (tokenType != "password_reset")
+            throw new SecurityTokenException("Invalid token type");
+
+        var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                     ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var email = principal.FindFirst(JwtRegisteredClaimNames.Email)?.Value
+                    ?? principal.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(email))
+            throw new SecurityTokenException("Invalid token claims");
+
+        return (userId, email);
+    }
+
+
 
 
 }
