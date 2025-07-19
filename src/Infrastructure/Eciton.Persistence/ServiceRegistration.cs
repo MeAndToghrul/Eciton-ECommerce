@@ -38,6 +38,8 @@ public static class ServiceRegistration
         services.AddScoped<PasswordService>();
         services.AddScoped<IEmailService, EmailService>();
 
+        services.AddHttpContextAccessor();
+
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(LoginUserCommandHandler).Assembly);

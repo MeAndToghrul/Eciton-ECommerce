@@ -48,6 +48,9 @@ namespace Eciton.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("NewValue")
                         .HasColumnType("text");
 
@@ -83,6 +86,9 @@ namespace Eciton.Persistence.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("varchar(250)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -116,6 +122,9 @@ namespace Eciton.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("boolean");
