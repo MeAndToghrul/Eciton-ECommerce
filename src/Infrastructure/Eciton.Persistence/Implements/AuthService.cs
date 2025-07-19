@@ -57,7 +57,7 @@ public class AuthService : IAuthService
 
         if (!appUser.IsEmailConfirmed)
         {
-            return new Response(ResponseStatusCode.Error, "Email not confirmed. Please check your email for verification.");
+            return new Response(ResponseStatusCode.EmailNotConfirmed, "Email not confirmed. Please check your email for verification.");
         }
 
         var token = _tokenService.GenerateToken(appUser);

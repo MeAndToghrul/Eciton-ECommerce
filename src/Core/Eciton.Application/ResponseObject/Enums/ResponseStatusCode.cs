@@ -1,4 +1,7 @@
-﻿namespace Eciton.Application.ResponceObject.Enums;
+﻿using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
+namespace Eciton.Application.ResponceObject.Enums;
+[JsonConverter(typeof(StringEnumConverter))]
 public enum ResponseStatusCode
 {
     Success = 1,
@@ -9,5 +12,6 @@ public enum ResponseStatusCode
     Unauthorized = 6,
     Conflict = 7,
     Created = 8,
-    NoContent = 9
+    NoContent = 9,
+    EmailNotConfirmed = 10
 }
