@@ -154,6 +154,8 @@ public class AuthService : IAuthService
             user.IsEmailConfirmed = true;
             await _appDbContext.SaveChangesAsync();
 
+            await _eventBus.PublishAsync(new UserEmailConfirmedEvent(user.Id));
+
             return new Response(ResponseStatusCode.Success, "Email uğurla təsdiqləndi.");
         }
         catch (SecurityTokenException ex)

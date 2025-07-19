@@ -21,6 +21,7 @@ public static class ServiceRegistration
 
         services.AddScoped<IEventHandler<UserRegisteredEvent>, UserRegisteredEventHandler>();
         services.AddScoped<IEventHandler<RoleCreatedEvent>, RoleEventHandler>();
+        services.AddScoped<IEventHandler<UserEmailConfirmedEvent>, UserEmailConfirmedEventHandler>();
 
         return services;
     }
