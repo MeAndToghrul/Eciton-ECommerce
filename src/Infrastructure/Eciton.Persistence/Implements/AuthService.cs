@@ -18,12 +18,14 @@ public class AuthService : IAuthService
     private readonly ITokenService _tokenService;
     private readonly IEmailService _emailService;
     private readonly IEventBus _eventBus;
+    private readonly ICacheService _cacheService;
     public AuthService(AppDbContext appDbContext,
         IMapper mapper,
         PasswordService passwordService,
         ITokenService tokenService,
         IEmailService emailService,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        ICacheService cacheService)
     {
         _appDbContext = appDbContext;
         _mapper = mapper;
@@ -31,6 +33,7 @@ public class AuthService : IAuthService
         _tokenService = tokenService;
         _emailService = emailService;
         _eventBus = eventBus;
+        _cacheService = cacheService;
     }
 
     public async Task<Response> LoginAsync(LoginDTO user)
@@ -63,9 +66,6 @@ public class AuthService : IAuthService
 
         return new Response(ResponseStatusCode.Success, token);
     }
-
-
-
     public async Task<Response> RegisterAsync(RegisterDTO user)
     {
         var normalizedEmail = user.Email.ToUpper().Trim();
@@ -107,12 +107,12 @@ public class AuthService : IAuthService
 
         var verificationToken = _tokenService.GenerateEmailVerificationToken(appUser.Id, appUser.Email);
 
+        await _cacheService.SetAsync($"EmailVerificationToken_{appUser.Id}", verificationToken, 3600);
+
         await _emailService.SendVerificationEmailAsync(appUser.Email, verificationToken);
 
         return new Response(ResponseStatusCode.Success, "User registered successfully. Please check your email to verify your account.");
-
     }
-
     public async Task<Response> ResendEmailVerificationAsync(string email)
     {
         email = email.ToLower().Trim();
@@ -127,19 +127,31 @@ public class AuthService : IAuthService
             return new Response(ResponseStatusCode.Success, "Email has already been verified.");
 
         var token = _tokenService.GenerateEmailVerificationToken(user.Id, user.Email);
+
+        if (await _cacheService.IsExistsAsync($"EmailVerificationToken_{user.Id}"))
+        {
+            return new Response(ResponseStatusCode.Error, "A verification email has already been sent. Please check your inbox.");
+        }
+
+        await _cacheService.SetAsync($"EmailVerificationToken_{user.Id}", token, 3600);
+       
         await _emailService.SendVerificationEmailAsync(user.Email, token);
 
         return new Response(ResponseStatusCode.Success, "Verification email has been resent.");
     }
-
-
     public async Task<Response> VerifyEmailAsync(string token)
     {
         try
         {
             var (userId, email) = _tokenService.ValidateEmailVerificationToken(token);
+            
+            var cacheData = await _cacheService.GetAsync<string>($"EmailVerificationToken_{userId}");
+            
+            if (cacheData == null || cacheData != token)
+                return new Response(ResponseStatusCode.Error, "Invalid or expired token.");
 
             var user = await _appDbContext.AppUsers.FindAsync(userId);
+            
             if (user == null)
                 return new Response(ResponseStatusCode.Error, "User not found or invalid token.");
 
@@ -151,6 +163,8 @@ public class AuthService : IAuthService
 
             user.IsEmailConfirmed = true;
             await _appDbContext.SaveChangesAsync();
+
+            _cacheService.Delete($"EmailVerificationToken_{userId}");
 
             await _eventBus.PublishAsync(new UserEmailConfirmedEvent(user.Id));
 
@@ -182,9 +196,10 @@ public class AuthService : IAuthService
 
         await _emailService.SendPasswordResetEmailAsync(user.Email, token);
 
+        await _cacheService.SetAsync($"PasswordResetToken_{user.Id}", token, 1800);
+
         return new Response(ResponseStatusCode.Success, "Password reset link has been sent to your email.");
     }
-
     public async Task<Response> ConfirmResetPasswordAsync(ResetPasswordDTO model)
     {
         try
@@ -192,6 +207,12 @@ public class AuthService : IAuthService
             var (userId, email) = _tokenService.ValidatePasswordResetToken(model.Token);
 
             var user = await _appDbContext.AppUsers.FindAsync(userId);
+
+            var cacheData = await _cacheService.GetAsync<string>($"PasswordResetToken_{userId}");
+
+            if (cacheData == null || cacheData != model.Token)
+                return new Response(ResponseStatusCode.Error, "Invalid or expired token.");
+
             if (user == null)
                 return new Response(ResponseStatusCode.Error, "User not found.");
 
@@ -203,6 +224,8 @@ public class AuthService : IAuthService
 
             user.PasswordHash = _passwordService.HashPassword(model.NewPassword);
             await _appDbContext.SaveChangesAsync();
+
+            _cacheService.Delete($"PasswordResetToken_{userId}");
 
             return new Response(ResponseStatusCode.Success, "Password has been reset successfully.");
         }
