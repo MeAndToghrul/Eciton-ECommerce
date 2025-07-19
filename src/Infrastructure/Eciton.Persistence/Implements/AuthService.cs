@@ -6,14 +6,9 @@ using Eciton.Application.Helpers;
 using Eciton.Application.ResponceObject;
 using Eciton.Application.ResponceObject.Enums;
 using Eciton.Domain.Entities.Identity;
-using Eciton.Domain.Settings;
-using Eciton.Infrastructure.Mongo.ReadModels;
 using Eciton.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mail;
-using System.Text;
 
 namespace Eciton.Persistence.Implements;
 public class AuthService : IAuthService
@@ -41,23 +36,28 @@ public class AuthService : IAuthService
 
     public async Task<Response> LoginAsync(LoginDTO user)
     {
-        var email = user.Email.ToLower().Trim();
+        var normalizedEmail = user.Email.ToUpper().Trim();
 
         var appUser = await _appDbContext.AppUsers
-            .Where(u => u.Email == email)
+            .Where(u => u.NormalizedEmail == normalizedEmail)
             .Include(x => x.Role)
             .FirstOrDefaultAsync();
 
         if (appUser == null)
         {
-            return new Response(ResponseStatusCode.Error, "Email və ya şifrə yanlışdır.");
+            return new Response(ResponseStatusCode.Error, "Invalid email or password.");
         }
 
         bool passwordValid = _passwordService.VerifyPassword(appUser.PasswordHash, user.Password);
 
         if (!passwordValid)
         {
-            return new Response(ResponseStatusCode.Error, "Email və ya şifrə yanlışdır.");
+            return new Response(ResponseStatusCode.Error, "Invalid email or password.");
+        }
+
+        if (!appUser.IsEmailConfirmed)
+        {
+            return new Response(ResponseStatusCode.Error, "Email not confirmed. Please check your email for verification.");
         }
 
         var token = _tokenService.GenerateToken(appUser);
@@ -69,9 +69,9 @@ public class AuthService : IAuthService
 
     public async Task<Response> RegisterAsync(RegisterDTO user)
     {
-        var email = user.Email.ToLower().Trim();
+        var normalizedEmail = user.Email.ToUpper().Trim();
 
-        if (await _appDbContext.AppUsers.AnyAsync(u => u.Email == email))
+        if (await _appDbContext.AppUsers.AnyAsync(u => u.NormalizedEmail == normalizedEmail))
         {
             return new Response(ResponseStatusCode.Error, "Email already exists.");
         }
@@ -122,16 +122,15 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(u => u.Email == email);
 
         if (user == null)
-            return new Response(ResponseStatusCode.Error, "İstifadəçi tapılmadı.");
+            return new Response(ResponseStatusCode.Error, "User not found.");
 
         if (user.IsEmailConfirmed)
-            return new Response(ResponseStatusCode.Success, "Email artıq təsdiqlənmişdir.");
+            return new Response(ResponseStatusCode.Success, "Email has already been verified.");
 
         var token = _tokenService.GenerateEmailVerificationToken(user.Id, user.Email);
-
         await _emailService.SendVerificationEmailAsync(user.Email, token);
 
-        return new Response(ResponseStatusCode.Success, "Email təsdiqləmə linki yenidən göndərildi.");
+        return new Response(ResponseStatusCode.Success, "Verification email has been resent.");
     }
 
 
@@ -143,30 +142,29 @@ public class AuthService : IAuthService
 
             var user = await _appDbContext.AppUsers.FindAsync(userId);
             if (user == null)
-                return new Response(ResponseStatusCode.Error, "İstifadəçi tapılmadı və ya token yanlışdır.");
+                return new Response(ResponseStatusCode.Error, "User not found or invalid token.");
 
             if (!string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase))
-                return new Response(ResponseStatusCode.Error, "Token uyğun email ilə uyğunlaşmır.");
+                return new Response(ResponseStatusCode.Error, "Token does not match the user's email.");
 
             if (user.IsEmailConfirmed)
-                return new Response(ResponseStatusCode.Success, "Email artıq təsdiqlənmişdir.");
+                return new Response(ResponseStatusCode.Success, "Email has already been verified.");
 
             user.IsEmailConfirmed = true;
             await _appDbContext.SaveChangesAsync();
 
             await _eventBus.PublishAsync(new UserEmailConfirmedEvent(user.Id));
 
-            return new Response(ResponseStatusCode.Success, "Email uğurla təsdiqləndi.");
+            return new Response(ResponseStatusCode.Success, "Email has been successfully verified.");
         }
         catch (SecurityTokenException ex)
         {
-            return new Response(ResponseStatusCode.Error, $"Token xətası: {ex.Message}");
+            return new Response(ResponseStatusCode.Error, $"Token error: {ex.Message}");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return new Response(ResponseStatusCode.Error, "Email təsdiqləmə zamanı xəta baş verdi.");
+            return new Response(ResponseStatusCode.Error, "An error occurred during email verification.");
         }
-
     }
 
 
