@@ -1,13 +1,10 @@
-﻿using Eciton.Domain.Entities.Common;
-using Eciton.Domain.Entities.Entity;
+﻿using Eciton.Domain.Entities.Entity;
 using Eciton.Domain.Entities.Identity;
 using Eciton.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Metadata;
 using System.Security.Claims;
-
 namespace Eciton.Persistence.Contexts;
 public class AppDbContext : DbContext
 {

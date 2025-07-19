@@ -17,7 +17,7 @@ public class EmailService : IEmailService
 
     public async Task<Response> SendVerificationEmailAsync(string email, string token)
     {
-        var verifyUrl = $"https://localhost:7224/api/auth/verify-email?token={token}";
+        var verifyUrl = $"https://localhost:7029/api/auth/verify-email?token={token}";
 
         var mail = new MailMessage
         {

@@ -9,7 +9,6 @@ using Eciton.Domain.Entities.Identity;
 using Eciton.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
 namespace Eciton.Persistence.Implements;
 public class AuthService : IAuthService
 {
