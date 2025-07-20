@@ -124,7 +124,20 @@ namespace Eciton.API.Controllers
 
             return BadRequest(response);
         }
+        [HttpPost("change-password")]
+        [SwaggerOperation(
+        Summary = "Changes the current user's password.",
+        Description = "Allows the authenticated user to change their password by providing the current password and a new password."
+        )]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
+        {
+            var response = await _mediator.Send(command);
+
+            if (response.ResponseStatusCode == ResponseStatusCode.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
     }
-
-
 }

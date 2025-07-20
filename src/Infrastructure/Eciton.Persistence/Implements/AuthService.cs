@@ -270,4 +270,34 @@ public class AuthService : IAuthService
         return _httpContextAccessor.HttpContext?.User?.Claims
             .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
     }
+
+    public async Task<Response> ChangePasswordAsync(ChangePasswordDTO model)
+    {
+        var userId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return new Response(ResponseStatusCode.Error, "User not identified.");
+        }
+        var user = await _appDbContext.AppUsers.FindAsync((userId));
+        if (user == null)
+        {
+            return new Response(ResponseStatusCode.Error, "User not found.");
+        }
+        if (!_passwordService.VerifyPassword(user.PasswordHash, model.OldPassword))
+        {
+            return new Response(ResponseStatusCode.Error, "Old password is incorrect.");
+        }
+        if (_passwordService.VerifyPassword(user.PasswordHash, model.NewPassword))
+        {
+            return new Response(ResponseStatusCode.Error, "New password cannot be the same as the old password.");
+        }
+        if (model.NewPassword != model.ConfirmNewPassword)
+        {
+            return new Response(ResponseStatusCode.Error, "New passwords do not match.");
+        }
+        user.PasswordHash = _passwordService.HashPassword(model.NewPassword);
+        await _appDbContext.SaveChangesAsync();
+        return new Response(ResponseStatusCode.Success, "Password changed successfully.");
+
+    }
 }
