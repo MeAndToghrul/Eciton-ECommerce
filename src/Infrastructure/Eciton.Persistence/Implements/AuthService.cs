@@ -7,11 +7,14 @@ using Eciton.Application.ResponceObject;
 using Eciton.Application.ResponceObject.Enums;
 using Eciton.Domain.Entities.Identity;
 using Eciton.Persistence.Contexts;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 namespace Eciton.Persistence.Implements;
 public class AuthService : IAuthService
 {
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly AppDbContext _appDbContext;
     private readonly IMapper _mapper;
     private readonly PasswordService _passwordService;
@@ -21,6 +24,7 @@ public class AuthService : IAuthService
     private readonly ICacheService _cacheService;
     public AuthService(AppDbContext appDbContext,
         IMapper mapper,
+        IHttpContextAccessor httpContextAccessor,
         PasswordService passwordService,
         ITokenService tokenService,
         IEmailService emailService,
@@ -29,6 +33,7 @@ public class AuthService : IAuthService
     {
         _appDbContext = appDbContext;
         _mapper = mapper;
+        _httpContextAccessor = httpContextAccessor;
         _passwordService = passwordService;
         _tokenService = tokenService;
         _emailService = emailService;
@@ -63,7 +68,10 @@ public class AuthService : IAuthService
         }
 
         var token = _tokenService.GenerateToken(appUser);
-
+        
+        await _cacheService.SetAsync($"UserToken_{appUser.Id}", token, 3600);
+        var data =await _cacheService.GetAsync<string>($"UserToken_{appUser.Id}");
+        Console.WriteLine("string:"+data);
         return new Response(ResponseStatusCode.Success, token);
     }
     public async Task<Response> RegisterAsync(RegisterDTO user)
@@ -239,4 +247,27 @@ public class AuthService : IAuthService
         }
     }
 
+    public async Task<Response> LogOutAsync()
+    {
+        var userId = GetCurrentUserId();
+
+        if (string.IsNullOrEmpty(userId))
+            return new Response(ResponseStatusCode.Error, "User not identified.");
+
+        var cacheData = await _cacheService.GetAsync<string>($"UserToken_{userId}");
+        Console.WriteLine($"Cache Data: {cacheData}");
+        var exists = await _cacheService.IsExistsAsync($"UserToken_{userId}");
+        if (!exists)
+            return new Response(ResponseStatusCode.Error, "User is not logged in.");
+
+        _cacheService.Delete($"UserToken_{userId}");
+
+        return new Response(ResponseStatusCode.Success, "User logged out successfully.");
+    }
+
+    private string? GetCurrentUserId()
+    {
+        return _httpContextAccessor.HttpContext?.User?.Claims
+            .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+    }
 }

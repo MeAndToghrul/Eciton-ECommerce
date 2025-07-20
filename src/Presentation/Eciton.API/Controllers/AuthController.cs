@@ -110,5 +110,21 @@ namespace Eciton.API.Controllers
 
             return BadRequest(response);
         }
+        [HttpPost("logout")]
+        [SwaggerOperation(
+        Summary = "Logs out the user.",
+        Description = "Invalidates the current user's token and logs them out."
+        )]
+        public async Task<IActionResult> Logout()
+        {
+            var response = await _mediator.Send(new LogoutCommand());
+
+            if (response.ResponseStatusCode == ResponseStatusCode.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
+
+
 }
