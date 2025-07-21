@@ -17,6 +17,7 @@ public class AuthService : IAuthService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly AppDbContext _appDbContext;
     private readonly IMapper _mapper;
+    private readonly UserService _userService;
     private readonly PasswordService _passwordService;
     private readonly ITokenService _tokenService;
     private readonly IEmailService _emailService;
@@ -25,6 +26,7 @@ public class AuthService : IAuthService
     public AuthService(AppDbContext appDbContext,
         IMapper mapper,
         IHttpContextAccessor httpContextAccessor,
+        UserService userService,
         PasswordService passwordService,
         ITokenService tokenService,
         IEmailService emailService,
@@ -34,6 +36,7 @@ public class AuthService : IAuthService
         _appDbContext = appDbContext;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
+        _userService = userService;
         _passwordService = passwordService;
         _tokenService = tokenService;
         _emailService = emailService;
@@ -69,9 +72,7 @@ public class AuthService : IAuthService
 
         var token = _tokenService.GenerateToken(appUser);
         
-        await _cacheService.SetAsync($"UserToken_{appUser.Id}", token, 3600);
-        var data =await _cacheService.GetAsync<string>($"UserToken_{appUser.Id}");
-        Console.WriteLine("string:"+data);
+        await _cacheService.SetAsync($"UserToken_{appUser.Id}", token, 3600);        
         return new Response(ResponseStatusCode.Success, token);
     }
     public async Task<Response> RegisterAsync(RegisterDTO user)
@@ -249,7 +250,7 @@ public class AuthService : IAuthService
 
     public async Task<Response> LogOutAsync()
     {
-        var userId = GetCurrentUserId();
+        var userId = _userService.GetCurrentUserId();
 
         if (string.IsNullOrEmpty(userId))
             return new Response(ResponseStatusCode.Error, "User not identified.");
@@ -265,15 +266,11 @@ public class AuthService : IAuthService
         return new Response(ResponseStatusCode.Success, "User logged out successfully.");
     }
 
-    private string? GetCurrentUserId()
-    {
-        return _httpContextAccessor.HttpContext?.User?.Claims
-            .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-    }
+    
 
     public async Task<Response> ChangePasswordAsync(ChangePasswordDTO model)
     {
-        var userId = GetCurrentUserId();
+        var userId = _userService.GetCurrentUserId();
         if (string.IsNullOrEmpty(userId))
         {
             return new Response(ResponseStatusCode.Error, "User not identified.");

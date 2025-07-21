@@ -35,6 +35,7 @@ public static class ServiceRegistration
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<PasswordService>();
+        services.AddScoped<UserService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ICacheService, LocalCacheService>();
         services.AddMemoryCache();
