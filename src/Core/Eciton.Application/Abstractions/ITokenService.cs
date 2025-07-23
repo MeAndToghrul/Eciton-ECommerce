@@ -2,7 +2,7 @@
 namespace Eciton.Application.Abstractions;
 public interface ITokenService
 {        
-    string GenerateToken(AppUser user);
+    string GenerateToken(AppUser user,string tokenId);
     string GenerateEmailVerificationToken(string userId, string email);
     (string userId, string email) ValidateEmailVerificationToken(string token);
     string GeneratePasswordResetToken(string userId, string email);

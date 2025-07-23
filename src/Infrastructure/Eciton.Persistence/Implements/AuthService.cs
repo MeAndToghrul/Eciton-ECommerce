@@ -70,9 +70,12 @@ public class AuthService : IAuthService
             return new Response(ResponseStatusCode.EmailNotConfirmed, "Email not confirmed. Please check your email for verification.");
         }
 
-        var token = _tokenService.GenerateToken(appUser);
-        
-        await _cacheService.SetAsync($"UserToken_{appUser.Id}", token, 3600);        
+        var tokenId = Guid.NewGuid().ToString();
+
+        var token = _tokenService.GenerateToken(appUser, tokenId);
+
+        await _cacheService.SetAsync($"UserToken_{tokenId}", appUser.Id, 3600);
+
         return new Response(ResponseStatusCode.Success, token);
     }
     public async Task<Response> RegisterAsync(RegisterDTO user)
@@ -250,23 +253,21 @@ public class AuthService : IAuthService
 
     public async Task<Response> LogOutAsync()
     {
-        var userId = _userService.GetCurrentUserId();
+        var tokenId = _userService.GetCurrentTokenId();
 
-        if (string.IsNullOrEmpty(userId))
-            return new Response(ResponseStatusCode.Error, "User not identified.");
+        if (string.IsNullOrEmpty(tokenId))
+            return new Response(ResponseStatusCode.Error, "Token not identified.");
 
-        var cacheData = await _cacheService.GetAsync<string>($"UserToken_{userId}");
-        Console.WriteLine($"Cache Data: {cacheData}");
-        var exists = await _cacheService.IsExistsAsync($"UserToken_{userId}");
+        var exists = await _cacheService.IsExistsAsync($"UserToken_{tokenId}");
         if (!exists)
-            return new Response(ResponseStatusCode.Error, "User is not logged in.");
+            return new Response(ResponseStatusCode.Error, "Token not found or already logged out.");
 
-        _cacheService.Delete($"UserToken_{userId}");
+        _cacheService.Delete($"UserToken_{tokenId}");
 
-        return new Response(ResponseStatusCode.Success, "User logged out successfully.");
+        return new Response(ResponseStatusCode.Success, "Logged out successfully.");
     }
 
-    
+
 
     public async Task<Response> ChangePasswordAsync(ChangePasswordDTO model)
     {
