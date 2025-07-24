@@ -17,7 +17,7 @@ public class LockoutCleanupTimer : BackgroundService
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<IAuthService>();
                 await userManager.RefreshLockoutEndAsync();
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }
     }

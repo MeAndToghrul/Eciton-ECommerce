@@ -62,15 +62,18 @@ public class AuthService : IAuthService
 
         if (failcount == appUser.MaxFailedAccessAttempts)
         {
-            appUser.LockoutEnd = DateTime.UtcNow.AddMinutes(1);
+            appUser.LockoutEnd = DateTime.UtcNow.AddMinutes(10);
+
+            // bununla bagli email gonderilecek
+
             return new Response(ResponseStatusCode.Error, "Account is locked due to too many failed login attempts. Please contact support to unlock your account.");
         }
 
         if (!passwordValid)
         {
-            failcount = appUser.AccessFailedCount++;           
+            failcount = appUser.AccessFailedCount++;
             return new Response(ResponseStatusCode.Error, "Invalid email or password.");
-        }       
+        }
 
 
         var tokenId = Guid.NewGuid().ToString();
@@ -303,29 +306,13 @@ public class AuthService : IAuthService
         return new Response(ResponseStatusCode.Success, "Password changed successfully.");
 
     }
-
     public async Task RefreshLockoutEndAsync()
     {
-        var usersDto = await _appDbContext.AppUsers
+        await _appDbContext.AppUsers
             .Where(x => x.LockoutEnd != null && x.LockoutEnd <= DateTime.UtcNow)
-            .Select(x => new UserGetDTO
-            {
-                Id = x.Id,
-                LockoutEnd = x.LockoutEnd,
-                AccessFailedCount = x.AccessFailedCount
-            })
-            .ToListAsync();
-
-        foreach (var dto in usersDto)
-        {
-            var user = await _appDbContext.AppUsers.FindAsync(dto.Id);
-            if (user != null)
-            {
-                user.LockoutEnd = null;
-                user.AccessFailedCount = 0;
-            }
-        }
-        await _appDbContext.SaveChangesAsync();
+            .ExecuteUpdateAsync(update => update
+                .SetProperty(x => x.LockoutEnd, x => null)
+                .SetProperty(x => x.AccessFailedCount, x => 0)
+            );
     }
-
 }

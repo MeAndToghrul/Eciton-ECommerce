@@ -22,11 +22,10 @@ namespace Eciton.API.Controllers
             _mediator = mediator;
         }
 
-
         [HttpPost("login")]
         [SwaggerOperation(
-        Summary = "Logs in the user.",
-        Description = "Allows a user to log in with email/username and password. Returns a JWT token if successful."
+            Summary = "Logs in the user.",
+            Description = "Allows a user to log in with email/username and password. Returns a JWT token if successful."
         )]
         public async Task<IActionResult> Login([FromBody] LoginUserCommand command)
         {
@@ -39,8 +38,8 @@ namespace Eciton.API.Controllers
 
         [HttpPost("register")]
         [SwaggerOperation(
-        Summary = "Registers a new user.",
-        Description = "Creates a new user account with provided information like email, username, and password."
+            Summary = "Registers a new user.",
+            Description = "Creates a new user account with provided information like email, username, and password."
         )]
         public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
         {
@@ -69,8 +68,8 @@ namespace Eciton.API.Controllers
 
         [HttpPost("resend-email-verification")]
         [SwaggerOperation(
-        Summary = "Resends the email verification link.",
-        Description = "This endpoint resends a verification email to the user if their email is not yet confirmed."
+            Summary = "Resends the email verification link.",
+            Description = "This endpoint resends a verification email to the user if their email is not yet confirmed."
         )]
         public async Task<IActionResult> ResendEmailVerification([FromBody] ResendEmailVerificationCommand command)
         {
@@ -84,9 +83,9 @@ namespace Eciton.API.Controllers
 
         [HttpPost("reset-password")]
         [SwaggerOperation(
-    Summary = "Sends a password reset email.",
-    Description = "Generates a password reset token and sends it to the user's email."
-)]
+            Summary = "Sends a password reset email.",
+            Description = "Generates a password reset token and sends it to the user's email."
+        )]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestCommand command)
         {
             var response = await _mediator.Send(command);
