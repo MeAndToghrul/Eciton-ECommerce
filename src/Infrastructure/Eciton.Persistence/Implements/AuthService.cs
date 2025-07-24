@@ -10,7 +10,6 @@ using Eciton.Persistence.Contexts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 namespace Eciton.Persistence.Implements;
 public class AuthService : IAuthService
 {
@@ -65,10 +64,7 @@ public class AuthService : IAuthService
             return new Response(ResponseStatusCode.Error, "Invalid email or password.");
         }
 
-        if (!appUser.IsEmailConfirmed)
-        {
-            return new Response(ResponseStatusCode.EmailNotConfirmed, "Email not confirmed. Please check your email for verification.");
-        }
+        
 
         var tokenId = Guid.NewGuid().ToString();
 
@@ -174,6 +170,12 @@ public class AuthService : IAuthService
                 return new Response(ResponseStatusCode.Success, "Email has already been verified.");
 
             user.IsEmailConfirmed = true;
+
+            user.RoleId = await _appDbContext.AppRoles
+                .Where(r => r.Name == "User")
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync() ?? user.RoleId;
+
             await _appDbContext.SaveChangesAsync();
 
             _cacheService.Delete($"EmailVerificationToken_{userId}");

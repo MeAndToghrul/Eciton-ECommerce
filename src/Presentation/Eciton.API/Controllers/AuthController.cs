@@ -1,4 +1,5 @@
-﻿using Eciton.Application.Abstractions;
+﻿using Eciton.API.Attributes;
+using Eciton.Application.Abstractions;
 using Eciton.Application.Commands.Auth;
 using Eciton.Application.DTOs.Auth;
 using Eciton.Application.ResponceObject.Enums;
@@ -129,6 +130,7 @@ namespace Eciton.API.Controllers
         Summary = "Changes the current user's password.",
         Description = "Allows the authenticated user to change their password by providing the current password and a new password."
         )]
+        [Auth("Admin")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
         {
             var response = await _mediator.Send(command);
