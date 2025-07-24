@@ -45,6 +45,7 @@ public class AuthService : IAuthService
 
     public async Task<Response> LoginAsync(LoginDTO user)
     {
+        int failcount = 0;
         var normalizedEmail = user.Email.ToUpper().Trim();
 
         var appUser = await _appDbContext.AppUsers
@@ -59,12 +60,18 @@ public class AuthService : IAuthService
 
         bool passwordValid = _passwordService.VerifyPassword(appUser.PasswordHash, user.Password);
 
-        if (!passwordValid)
+        if (failcount == appUser.MaxFailedAccessAttempts)
         {
-            return new Response(ResponseStatusCode.Error, "Invalid email or password.");
+            appUser.LockoutEnd = DateTime.UtcNow.AddMinutes(1);
+            return new Response(ResponseStatusCode.Error, "Account is locked due to too many failed login attempts. Please contact support to unlock your account.");
         }
 
-        
+        if (!passwordValid)
+        {
+            failcount = appUser.AccessFailedCount++;           
+            return new Response(ResponseStatusCode.Error, "Invalid email or password.");
+        }       
+
 
         var tokenId = Guid.NewGuid().ToString();
 
@@ -142,7 +149,7 @@ public class AuthService : IAuthService
         }
 
         await _cacheService.SetAsync($"EmailVerificationToken_{user.Id}", token, 3600);
-       
+
         await _emailService.SendVerificationEmailAsync(user.Email, token);
 
         return new Response(ResponseStatusCode.Success, "Verification email has been resent.");
@@ -152,14 +159,14 @@ public class AuthService : IAuthService
         try
         {
             var (userId, email) = _tokenService.ValidateEmailVerificationToken(token);
-            
+
             var cacheData = await _cacheService.GetAsync<string>($"EmailVerificationToken_{userId}");
-            
+
             if (cacheData == null || cacheData != token)
                 return new Response(ResponseStatusCode.Error, "Invalid or expired token.");
 
             var user = await _appDbContext.AppUsers.FindAsync(userId);
-            
+
             if (user == null)
                 return new Response(ResponseStatusCode.Error, "User not found or invalid token.");
 
@@ -296,4 +303,29 @@ public class AuthService : IAuthService
         return new Response(ResponseStatusCode.Success, "Password changed successfully.");
 
     }
+
+    public async Task RefreshLockoutEndAsync()
+    {
+        var usersDto = await _appDbContext.AppUsers
+            .Where(x => x.LockoutEnd != null && x.LockoutEnd <= DateTime.UtcNow)
+            .Select(x => new UserGetDTO
+            {
+                Id = x.Id,
+                LockoutEnd = x.LockoutEnd,
+                AccessFailedCount = x.AccessFailedCount
+            })
+            .ToListAsync();
+
+        foreach (var dto in usersDto)
+        {
+            var user = await _appDbContext.AppUsers.FindAsync(dto.Id);
+            if (user != null)
+            {
+                user.LockoutEnd = null;
+                user.AccessFailedCount = 0;
+            }
+        }
+        await _appDbContext.SaveChangesAsync();
+    }
+
 }

@@ -12,4 +12,5 @@ public interface IAuthService
     Task<Response> ConfirmResetPasswordAsync(ResetPasswordDTO model);
     Task<Response> ChangePasswordAsync(ChangePasswordDTO model);
     Task<Response> LogOutAsync();
+    Task RefreshLockoutEndAsync();  
 }

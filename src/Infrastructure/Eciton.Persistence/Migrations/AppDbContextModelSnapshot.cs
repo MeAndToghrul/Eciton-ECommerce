@@ -135,6 +135,9 @@ namespace Eciton.Persistence.Migrations
                     b.Property<DateTime?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("MaxFailedAccessAttempts")
+                        .HasColumnType("integer");
+
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()
                         .HasMaxLength(100)

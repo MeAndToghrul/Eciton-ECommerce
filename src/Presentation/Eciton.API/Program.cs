@@ -17,6 +17,7 @@ builder.Services.AddPostgreSql(builder.Configuration.GetConnectionString("Postgr
 builder.Services.AddFluentValidation();
 builder.Services.AddScoped<IEventBus, InMemoryEventBus>();
 
+builder.Services.AddSignalR();
 
 
 
