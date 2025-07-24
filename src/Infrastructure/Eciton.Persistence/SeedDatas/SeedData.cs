@@ -64,7 +64,7 @@ public static class SeedData
                 adminUser.Id,
                 adminUser.FullName,
                 adminUser.Email,
-                adminUser.RoleId,
+                "Admin",
                 adminUser.IsEmailConfirmed
             ));
         }

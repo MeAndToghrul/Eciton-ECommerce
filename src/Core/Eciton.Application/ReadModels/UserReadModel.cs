@@ -15,8 +15,8 @@ public class UserReadModel
     [BsonElement("email")]
     public string Email { get; set; } = null!;
 
-    [BsonElement("roleId")]
-    public string RoleId { get; set; } = null!;
+    [BsonElement("roleName")]
+    public string RoleName { get; set; } = null!;
 
     [BsonElement("isEmailConfirmed")]
     public bool IsEmailConfirmed { get; set; }

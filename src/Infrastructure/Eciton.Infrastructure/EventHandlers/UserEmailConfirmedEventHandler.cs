@@ -16,7 +16,9 @@ public class UserEmailConfirmedEventHandler : IEventHandler<UserEmailConfirmedEv
     public async Task HandleAsync(UserEmailConfirmedEvent @event)
     {
         var filter = Builders<UserReadModel>.Filter.Eq(u => u.Id, @event.UserId);
-        var update = Builders<UserReadModel>.Update.Set(u => u.IsEmailConfirmed, true);
+        var update = Builders<UserReadModel>.Update
+            .Set(u => u.IsEmailConfirmed, true)
+            .Set(u => u.RoleName, "User");
 
         await _collection.UpdateOneAsync(filter, update);
     }

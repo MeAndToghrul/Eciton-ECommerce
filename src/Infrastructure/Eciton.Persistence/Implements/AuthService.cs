@@ -109,7 +109,7 @@ public class AuthService : IAuthService
             appUser.Id,
             appUser.FullName,
             appUser.Email,
-            appUser.RoleId,
+            "Guest",
             appUser.IsEmailConfirmed
         ));
 
@@ -252,7 +252,6 @@ public class AuthService : IAuthService
             return new Response(ResponseStatusCode.Error, "An error occurred during password reset.");
         }
     }
-
     public async Task<Response> LogOutAsync()
     {
         var tokenId = _userService.GetCurrentTokenId();
@@ -268,9 +267,6 @@ public class AuthService : IAuthService
 
         return new Response(ResponseStatusCode.Success, "Logged out successfully.");
     }
-
-
-
     public async Task<Response> ChangePasswordAsync(ChangePasswordDTO model)
     {
         var userId = _userService.GetCurrentUserId();

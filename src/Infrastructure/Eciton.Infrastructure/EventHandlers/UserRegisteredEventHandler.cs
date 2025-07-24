@@ -21,7 +21,7 @@ public class UserRegisteredEventHandler : IEventHandler<UserRegisteredEvent>
             Id = @event.Id,
             FullName = @event.FullName,
             Email = @event.Email,
-            RoleId = @event.RoleId,
+            RoleName = @event.RoleName,
             IsEmailConfirmed = @event.IsEmailConfirmed,
         };
 
