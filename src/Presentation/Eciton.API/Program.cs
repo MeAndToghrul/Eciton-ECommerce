@@ -1,7 +1,6 @@
 using AspNetCoreRateLimit;
 using Eciton.Application.Abstractions;
 using Eciton.Infrastructure;
-using Eciton.Infrastructure.Context;
 using Eciton.Infrastructure.EventBus;
 using Eciton.Persistence;
 using Eciton.Persistence.Contexts;
@@ -15,6 +14,15 @@ builder.Services.AddScoped<ValidationFilter>();
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
+});
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -102,7 +110,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
 
