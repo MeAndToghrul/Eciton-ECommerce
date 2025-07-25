@@ -1,6 +1,7 @@
 ﻿using Eciton.Application.Abstractions;
 using Eciton.Application.Events;
 using Eciton.Domain.Settings;
+using Eciton.Infrastructure.BackGroundServices;
 using Eciton.Infrastructure.Context;
 using Eciton.Infrastructure.EventHandlers;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +23,10 @@ public static class ServiceRegistration
         services.AddScoped<IEventHandler<UserRegisteredEvent>, UserRegisteredEventHandler>();
         services.AddScoped<IEventHandler<RoleCreatedEvent>, RoleEventHandler>();
         services.AddScoped<IEventHandler<UserEmailConfirmedEvent>, UserEmailConfirmedEventHandler>();
+
+
+        
+        services.AddHostedService<LockoutCleanupTimer>();   
 
         return services;
     }

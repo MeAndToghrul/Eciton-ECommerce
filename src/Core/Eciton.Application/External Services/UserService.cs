@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
+namespace Eciton.Application.ExternalServices;
 public class UserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;

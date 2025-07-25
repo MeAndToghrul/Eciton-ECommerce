@@ -10,6 +10,8 @@ public class AppUser : BaseEntity
     public AppRole Role { get; set; } = null!;
     public bool IsEmailConfirmed { get; set; } = false;
     public bool LockoutEnabled { get; set; } = true;
+    public DateTime? LastFailedAttempt { get; set; }
     public DateTime? LockoutEnd { get; set; }
     public int AccessFailedCount { get; set; } = 0;        
+    public int MaxFailedAccessAttempts { get; set; } = 5; 
 }

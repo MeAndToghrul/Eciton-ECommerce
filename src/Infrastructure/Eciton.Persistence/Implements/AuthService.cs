@@ -2,6 +2,7 @@
 using Eciton.Application.Abstractions;
 using Eciton.Application.DTOs.Auth;
 using Eciton.Application.Events;
+using Eciton.Application.ExternalServices;
 using Eciton.Application.Helpers;
 using Eciton.Application.ResponceObject;
 using Eciton.Application.ResponceObject.Enums;
@@ -10,7 +11,6 @@ using Eciton.Persistence.Contexts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 namespace Eciton.Persistence.Implements;
 public class AuthService : IAuthService
 {
@@ -23,6 +23,7 @@ public class AuthService : IAuthService
     private readonly IEmailService _emailService;
     private readonly IEventBus _eventBus;
     private readonly ICacheService _cacheService;
+    private readonly IRateLimitService _rateLimitService;
     public AuthService(AppDbContext appDbContext,
         IMapper mapper,
         IHttpContextAccessor httpContextAccessor,
@@ -31,7 +32,8 @@ public class AuthService : IAuthService
         ITokenService tokenService,
         IEmailService emailService,
         IEventBus eventBus,
-        ICacheService cacheService)
+        ICacheService cacheService,
+        IRateLimitService rateLimitService)
     {
         _appDbContext = appDbContext;
         _mapper = mapper;
@@ -42,10 +44,17 @@ public class AuthService : IAuthService
         _emailService = emailService;
         _eventBus = eventBus;
         _cacheService = cacheService;
+        _rateLimitService = rateLimitService;
     }
 
     public async Task<Response> LoginAsync(LoginDTO user)
     {
+
+        if (await _rateLimitService.IsBlocked(user.UserIp))
+        {
+            return new Response(ResponseStatusCode.Error, "E gijdillaq sikdirde");
+        }
+
         var normalizedEmail = user.Email.ToUpper().Trim();
 
         var appUser = await _appDbContext.AppUsers
@@ -60,15 +69,33 @@ public class AuthService : IAuthService
 
         bool passwordValid = _passwordService.VerifyPassword(appUser.PasswordHash, user.Password);
 
+        if (appUser.AccessFailedCount >= appUser.MaxFailedAccessAttempts && appUser.LockoutEnd != null)
+        {
+            await _rateLimitService.RegisterFailedAttempt(user.UserIp);
+
+            // bununla bagli email gonderilecek
+            
+            return new Response(ResponseStatusCode.Error, "Account is locked due to too many failed login attempts. Please contact support to unlock your account.");
+        }
+
+
         if (!passwordValid)
         {
+            await _rateLimitService.RegisterFailedAttempt(user.UserIp);
+
+            appUser.AccessFailedCount++;
+
+            appUser.LastFailedAttempt = DateTime.UtcNow;
+
+            if (appUser.AccessFailedCount >= appUser.MaxFailedAccessAttempts)
+            {
+                appUser.LockoutEnd = DateTime.UtcNow.AddMinutes(5);
+            }
+
+            await _appDbContext.SaveChangesAsync();
             return new Response(ResponseStatusCode.Error, "Invalid email or password.");
         }
 
-        if (!appUser.IsEmailConfirmed)
-        {
-            return new Response(ResponseStatusCode.EmailNotConfirmed, "Email not confirmed. Please check your email for verification.");
-        }
 
         var tokenId = Guid.NewGuid().ToString();
 
@@ -113,7 +140,7 @@ public class AuthService : IAuthService
             appUser.Id,
             appUser.FullName,
             appUser.Email,
-            appUser.RoleId,
+            "Guest",
             appUser.IsEmailConfirmed
         ));
 
@@ -146,7 +173,7 @@ public class AuthService : IAuthService
         }
 
         await _cacheService.SetAsync($"EmailVerificationToken_{user.Id}", token, 3600);
-       
+
         await _emailService.SendVerificationEmailAsync(user.Email, token);
 
         return new Response(ResponseStatusCode.Success, "Verification email has been resent.");
@@ -156,14 +183,14 @@ public class AuthService : IAuthService
         try
         {
             var (userId, email) = _tokenService.ValidateEmailVerificationToken(token);
-            
+
             var cacheData = await _cacheService.GetAsync<string>($"EmailVerificationToken_{userId}");
-            
+
             if (cacheData == null || cacheData != token)
                 return new Response(ResponseStatusCode.Error, "Invalid or expired token.");
 
             var user = await _appDbContext.AppUsers.FindAsync(userId);
-            
+
             if (user == null)
                 return new Response(ResponseStatusCode.Error, "User not found or invalid token.");
 
@@ -174,6 +201,12 @@ public class AuthService : IAuthService
                 return new Response(ResponseStatusCode.Success, "Email has already been verified.");
 
             user.IsEmailConfirmed = true;
+
+            user.RoleId = await _appDbContext.AppRoles
+                .Where(r => r.Name == "User")
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync() ?? user.RoleId;
+
             await _appDbContext.SaveChangesAsync();
 
             _cacheService.Delete($"EmailVerificationToken_{userId}");
@@ -250,7 +283,6 @@ public class AuthService : IAuthService
             return new Response(ResponseStatusCode.Error, "An error occurred during password reset.");
         }
     }
-
     public async Task<Response> LogOutAsync()
     {
         var tokenId = _userService.GetCurrentTokenId();
@@ -266,9 +298,6 @@ public class AuthService : IAuthService
 
         return new Response(ResponseStatusCode.Success, "Logged out successfully.");
     }
-
-
-
     public async Task<Response> ChangePasswordAsync(ChangePasswordDTO model)
     {
         var userId = _userService.GetCurrentUserId();
@@ -297,5 +326,14 @@ public class AuthService : IAuthService
         await _appDbContext.SaveChangesAsync();
         return new Response(ResponseStatusCode.Success, "Password changed successfully.");
 
+    }
+    public async Task RefreshLockoutEndAsync()
+    {
+        await _appDbContext.AppUsers
+            .Where(x => x.LockoutEnd != null && x.LockoutEnd <= DateTime.UtcNow)
+            .ExecuteUpdateAsync(update => update
+                .SetProperty(x => x.LockoutEnd, x => null)
+                .SetProperty(x => x.AccessFailedCount, x => 0)
+            );
     }
 }

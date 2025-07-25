@@ -15,7 +15,8 @@ public static class SeedData
         {
             new AppRole { Id = Guid.NewGuid().ToString(), Name = "SuperAdmin"},
             new AppRole { Id = Guid.NewGuid().ToString(), Name = "Admin"},
-            new AppRole { Id = Guid.NewGuid().ToString(), Name = "Guest"}
+            new AppRole { Id = Guid.NewGuid().ToString(), Name = "Guest"},
+            new AppRole { Id = Guid.NewGuid().ToString(), Name = "User"}
         };
 
         foreach (var role in roles)
@@ -63,7 +64,7 @@ public static class SeedData
                 adminUser.Id,
                 adminUser.FullName,
                 adminUser.Email,
-                adminUser.RoleId,
+                "Admin",
                 adminUser.IsEmailConfirmed
             ));
         }

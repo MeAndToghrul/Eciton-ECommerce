@@ -1,9 +1,10 @@
+using AspNetCoreRateLimit;
 using Eciton.Application.Abstractions;
+using Eciton.Infrastructure;
 using Eciton.Infrastructure.Context;
 using Eciton.Infrastructure.EventBus;
 using Eciton.Persistence;
 using Eciton.Persistence.Contexts;
-using Eciton.Infrastructure;
 using Eciton.Persistence.SeedDatas;
 using FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
@@ -17,6 +18,13 @@ builder.Services.AddPostgreSql(builder.Configuration.GetConnectionString("Postgr
 builder.Services.AddFluentValidation();
 builder.Services.AddScoped<IEventBus, InMemoryEventBus>();
 
+//SignalR
+builder.Services.AddSignalR();
+
+//Rate Limiting
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 
 
@@ -71,6 +79,7 @@ await SeedData.SeedRolesAndAdminAsync(sqlContext,eventBus);
 
 
 app.UseStaticFiles();
+app.UseIpRateLimiting();
 
 if (app.Environment.IsDevelopment())
 {

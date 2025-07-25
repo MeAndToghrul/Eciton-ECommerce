@@ -129,11 +129,17 @@ namespace Eciton.Persistence.Migrations
                     b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTime?>("LastFailedAttempt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("MaxFailedAccessAttempts")
+                        .HasColumnType("integer");
 
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()
