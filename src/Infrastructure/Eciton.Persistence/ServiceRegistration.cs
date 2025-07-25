@@ -1,4 +1,5 @@
 ﻿using Eciton.Application.Abstractions;
+using Eciton.Application.Commands.Auth;
 using Eciton.Application.ExternalServices;
 using Eciton.Application.Handlers.Auth;
 using Eciton.Application.Helpers;
@@ -27,7 +28,7 @@ public static class ServiceRegistration
     public static IServiceCollection AddFluentValidation(this IServiceCollection services)
     {
         services.AddFluentValidationAutoValidation();
-        services.AddValidatorsFromAssemblyContaining(typeof(RegisterDtoValidator));
+        services.AddValidatorsFromAssemblyContaining(typeof(RegisterUserCommand));
         return services;
     }
 

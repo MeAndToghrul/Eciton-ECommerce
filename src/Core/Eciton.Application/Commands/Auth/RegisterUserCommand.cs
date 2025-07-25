@@ -1,12 +1,9 @@
-﻿using Eciton.Application.ResponceObject;
+﻿using Eciton.Application.DTOs.Auth;
+using Eciton.Application.ResponceObject;
 using MediatR;
 
 namespace Eciton.Application.Commands.Auth;
 public class RegisterUserCommand : IRequest<Response>
 {
-    public string Name { get; set; } = null!;
-    public string Surname { get; set; } = null!;
-    public string Email { get; set; } = null!;
-    public string Password { get; set; } = null!;
-    public string ConfirmPassword { get; set; } = null!;
+    public RegisterDTO Model { get; set; } 
 }

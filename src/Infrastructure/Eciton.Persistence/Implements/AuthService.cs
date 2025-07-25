@@ -133,6 +133,7 @@ public class AuthService : IAuthService
         }
 
         appUser.RoleId = defaultRoleId!;
+        appUser.AcceptTerms = true; 
         await _appDbContext.AddAsync(appUser);
         await _appDbContext.SaveChangesAsync();
 
