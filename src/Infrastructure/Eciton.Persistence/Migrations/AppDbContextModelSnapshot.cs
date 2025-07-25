@@ -107,6 +107,9 @@ namespace Eciton.Persistence.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<bool>("AcceptTerms")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 

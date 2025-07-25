@@ -31,6 +31,9 @@ public class RegisterDtoValidator : AbstractValidator<RegisterUserCommand>
         RuleFor(x => x.Model.ConfirmPassword)
             .NotEmpty().WithMessage("Please confirm your password.")
             .Equal(x => x.Model.Password).WithMessage("Passwords do not match.");
+
+        RuleFor(x => x.Model.AcceptTerms)
+            .Equal(true).WithMessage("You must accept the terms and conditions.");
     }
 
     private bool ContainSymbol(string password)
