@@ -34,7 +34,9 @@ public class RegisterDtoValidator : AbstractValidator<RegisterUserCommand>
     }
 
     private bool ContainSymbol(string password)
-    {       
-        return password.Any(ch => !char.IsLetterOrDigit(ch));
+    {
+        var specialChars = "!@#$%^&*()_+-=[]{}|;:',.<>?/`~";
+        return password.Any(ch => specialChars.Contains(ch));
     }
+
 }
