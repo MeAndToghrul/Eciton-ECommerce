@@ -7,11 +7,19 @@ using Eciton.Persistence;
 using Eciton.Persistence.Contexts;
 using Eciton.Persistence.SeedDatas;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
+builder.Services.AddScoped<ValidationFilter>();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+});
 builder.Services.AddBlServices(builder.Configuration);
 builder.Services.AddMongoDb(builder.Configuration);
 builder.Services.AddPostgreSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
@@ -25,6 +33,8 @@ builder.Services.AddSignalR();
 builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+
 
 
 
