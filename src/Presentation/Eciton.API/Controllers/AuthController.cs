@@ -29,6 +29,8 @@ namespace Eciton.API.Controllers
         )]
         public async Task<IActionResult> Login([FromBody] LoginUserCommand command)
         {
+            command.Model.UserIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+
             var response = await _mediator.Send(command);
 
             if (response.ResponseStatusCode == ResponseStatusCode.Success)

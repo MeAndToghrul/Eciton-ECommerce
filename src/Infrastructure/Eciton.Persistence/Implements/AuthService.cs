@@ -2,6 +2,7 @@
 using Eciton.Application.Abstractions;
 using Eciton.Application.DTOs.Auth;
 using Eciton.Application.Events;
+using Eciton.Application.ExternalServices;
 using Eciton.Application.Helpers;
 using Eciton.Application.ResponceObject;
 using Eciton.Application.ResponceObject.Enums;
@@ -22,6 +23,7 @@ public class AuthService : IAuthService
     private readonly IEmailService _emailService;
     private readonly IEventBus _eventBus;
     private readonly ICacheService _cacheService;
+    private readonly IRateLimitService _rateLimitService;
     public AuthService(AppDbContext appDbContext,
         IMapper mapper,
         IHttpContextAccessor httpContextAccessor,
@@ -30,7 +32,8 @@ public class AuthService : IAuthService
         ITokenService tokenService,
         IEmailService emailService,
         IEventBus eventBus,
-        ICacheService cacheService)
+        ICacheService cacheService,
+        IRateLimitService rateLimitService)
     {
         _appDbContext = appDbContext;
         _mapper = mapper;
@@ -41,11 +44,17 @@ public class AuthService : IAuthService
         _emailService = emailService;
         _eventBus = eventBus;
         _cacheService = cacheService;
+        _rateLimitService = rateLimitService;
     }
 
     public async Task<Response> LoginAsync(LoginDTO user)
     {
-        int failcount = 0;
+
+        if (await _rateLimitService.IsBlocked(user.UserIp))
+        {
+            return new Response(ResponseStatusCode.Error, "E gijdillaq sikdirde");
+        }
+
         var normalizedEmail = user.Email.ToUpper().Trim();
 
         var appUser = await _appDbContext.AppUsers
@@ -60,18 +69,30 @@ public class AuthService : IAuthService
 
         bool passwordValid = _passwordService.VerifyPassword(appUser.PasswordHash, user.Password);
 
-        if (failcount == appUser.MaxFailedAccessAttempts)
+        if (appUser.AccessFailedCount >= appUser.MaxFailedAccessAttempts && appUser.LockoutEnd != null)
         {
-            appUser.LockoutEnd = DateTime.UtcNow.AddMinutes(10);
+            await _rateLimitService.RegisterFailedAttempt(user.UserIp);
 
             // bununla bagli email gonderilecek
-
+            
             return new Response(ResponseStatusCode.Error, "Account is locked due to too many failed login attempts. Please contact support to unlock your account.");
         }
 
+
         if (!passwordValid)
         {
-            failcount = appUser.AccessFailedCount++;
+            await _rateLimitService.RegisterFailedAttempt(user.UserIp);
+
+            appUser.AccessFailedCount++;
+
+            appUser.LastFailedAttempt = DateTime.UtcNow;
+
+            if (appUser.AccessFailedCount >= appUser.MaxFailedAccessAttempts)
+            {
+                appUser.LockoutEnd = DateTime.UtcNow.AddMinutes(5);
+            }
+
+            await _appDbContext.SaveChangesAsync();
             return new Response(ResponseStatusCode.Error, "Invalid email or password.");
         }
 

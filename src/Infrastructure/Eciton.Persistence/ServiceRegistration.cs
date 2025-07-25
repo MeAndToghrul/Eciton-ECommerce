@@ -1,4 +1,5 @@
 ﻿using Eciton.Application.Abstractions;
+using Eciton.Application.ExternalServices;
 using Eciton.Application.Handlers.Auth;
 using Eciton.Application.Helpers;
 using Eciton.Application.MapperProfiles;
@@ -36,8 +37,9 @@ public static class ServiceRegistration
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<PasswordService>();
         services.AddScoped<UserService>();
-        services.AddScoped<IEmailService, EmailService>();   
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ICacheService, LocalCacheService>();
+        services.AddScoped<IRateLimitService, RateLimitService>();
         services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
