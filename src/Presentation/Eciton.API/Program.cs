@@ -30,6 +30,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 builder.Services.AddBlServices(builder.Configuration);
 builder.Services.AddMongoDb(builder.Configuration);
+builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddPostgreSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
 builder.Services.AddFluentValidation();
 builder.Services.AddScoped<IEventBus, InMemoryEventBus>();

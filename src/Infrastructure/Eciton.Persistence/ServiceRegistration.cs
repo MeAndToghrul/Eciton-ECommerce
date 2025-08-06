@@ -41,6 +41,7 @@ public static class ServiceRegistration
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ICacheService, LocalCacheService>();
         services.AddScoped<IRateLimitService, RateLimitService>();
+        services.AddScoped<ICategoryService, CategoryService>();        
         services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
