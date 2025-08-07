@@ -9,6 +9,7 @@ using Eciton.Application.ResponceObject.Enums;
 using Eciton.Domain.Entities.Entity;
 using Eciton.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
+
 namespace Eciton.Persistence.Implements;
 public class CategoryService : ICategoryService
 {
@@ -55,6 +56,19 @@ public class CategoryService : ICategoryService
         return new Response(ResponseStatusCode.Success, "Category created successfully.");
     }
 
+    public  async Task<Response<List<CategoryReadModel>>> GetAllAsync()
+    {
+        var response = await _categoryReadRepository.GetAllAsync();
+
+        if (response.Data == null || !response.Data.Any())
+        {
+            return new Response<List<CategoryReadModel>>(ResponseStatusCode.NotFound, "No categories found.");
+        }
+
+        return new Response<List<CategoryReadModel>>(ResponseStatusCode.Success, response.Data);
+
+    }
+
     public async Task<Response<CategoryReadModel>> GetByIdAsync(string id)
     {
         if (string.IsNullOrWhiteSpace(id))
@@ -63,5 +77,15 @@ public class CategoryService : ICategoryService
         }
 
         return await _categoryReadRepository.GetByIdAsync(id);
+    }
+
+    public async Task<Response<CategoryReadModel>> GetByNameAsync(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return new Response<CategoryReadModel>(ResponseStatusCode.Error, "Category Name is required.");
+        }
+
+        return await _categoryReadRepository.GetByNameAsync(name);
     }
 }

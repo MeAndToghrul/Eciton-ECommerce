@@ -13,5 +13,7 @@ namespace Eciton.Application.Abstractions
     {
         Task<Response>  CreateAsync(CreateCategoryDTO categoryDTO);
         Task<Response<CategoryReadModel>>  GetByIdAsync(string id);
+        Task<Response<CategoryReadModel>>  GetByNameAsync(string name);
+        Task<Response<List<CategoryReadModel>>> GetAllAsync();
     }
 }

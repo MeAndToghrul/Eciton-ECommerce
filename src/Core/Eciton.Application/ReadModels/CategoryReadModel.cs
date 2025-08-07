@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Eciton.Application.ReadModels
+﻿namespace Eciton.Application.ReadModels;
+public class CategoryReadModel
 {
-    public class CategoryReadModel
-    {
-        public string Id { get; set; }
-        public string Name { get; set; } = null!;
-        public string? CategoryImage { get; set; }
-    }
+    public string Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string? CategoryImage { get; set; }
 }

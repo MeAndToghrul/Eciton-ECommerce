@@ -36,7 +36,7 @@ public class CategoryController : ControllerBase
         return BadRequest(response);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("id/{id}")]
     [SwaggerOperation(
         Summary = "Gets category by ID.",
         Description = "Fetches a category from MongoDB ReadModel by its ID."
@@ -44,6 +44,34 @@ public class CategoryController : ControllerBase
     public async Task<IActionResult> GetById(string id)
     {
         var response = await _categoryService.GetByIdAsync(id);
+
+        if (response.ResponseStatusCode == ResponseStatusCode.Success)
+            return Ok(response);
+
+        return NotFound(response);
+    }
+    [HttpGet("name/{name}")]
+    [SwaggerOperation(
+        Summary = "Gets category by Name.",
+        Description = "Fetches a category from MongoDB ReadModel by its Name."
+    )]
+    public async Task<IActionResult> GetByName(string name)
+    {
+        var response = await _categoryService.GetByNameAsync(name);
+
+        if (response.ResponseStatusCode == ResponseStatusCode.Success)
+            return Ok(response);
+
+        return NotFound(response);
+    }
+    [HttpGet("all")]
+    [SwaggerOperation(
+        Summary = "Gets all categories.",
+        Description = "Fetches all categories from MongoDB ReadModel."
+    )]
+    public async Task<IActionResult> GetAll()
+    {
+        var response = await _categoryService.GetAllAsync();
 
         if (response.ResponseStatusCode == ResponseStatusCode.Success)
             return Ok(response);
