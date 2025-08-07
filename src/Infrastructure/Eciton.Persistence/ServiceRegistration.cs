@@ -1,5 +1,8 @@
 ﻿using Eciton.Application.Abstractions;
 using Eciton.Application.Commands.Auth;
+using Eciton.Application.Commands.Category;
+using Eciton.Application.Commands.CategoryField;
+using Eciton.Application.DTOs.Category;
 using Eciton.Application.ExternalServices;
 using Eciton.Application.Handlers.Auth;
 using Eciton.Application.Helpers;
@@ -28,7 +31,7 @@ public static class ServiceRegistration
     public static IServiceCollection AddFluentValidation(this IServiceCollection services)
     {
         services.AddFluentValidationAutoValidation();
-        services.AddValidatorsFromAssemblyContaining(typeof(RegisterUserCommand));
+        services.AddValidatorsFromAssemblyContaining(typeof(RegisterUserCommand));        
         return services;
     }
 
@@ -41,7 +44,8 @@ public static class ServiceRegistration
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ICacheService, LocalCacheService>();
         services.AddScoped<IRateLimitService, RateLimitService>();
-        services.AddScoped<ICategoryService, CategoryService>();        
+        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<ICategoryFieldService, CategoryFieldService>();
         services.AddMemoryCache();
 
         services.AddHttpContextAccessor();

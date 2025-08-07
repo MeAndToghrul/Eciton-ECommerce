@@ -22,4 +22,7 @@ public class MongoDbContext
 
     public IMongoCollection<CategoryReadModel> Categories =>
         _database.GetCollection<CategoryReadModel>("Categories");
+
+    public IMongoCollection<CategoryFieldReadModel> CategoryFields =>
+        _database.GetCollection<CategoryFieldReadModel>("CategoryFields");
 }

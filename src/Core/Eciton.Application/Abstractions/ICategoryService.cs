@@ -1,12 +1,6 @@
 ﻿using Eciton.Application.DTOs.Category;
 using Eciton.Application.ReadModels;
 using Eciton.Application.ResponceObject;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Eciton.Application.Abstractions
 {
     public interface ICategoryService
@@ -15,5 +9,6 @@ namespace Eciton.Application.Abstractions
         Task<Response<CategoryReadModel>>  GetByIdAsync(string id);
         Task<Response<CategoryReadModel>>  GetByNameAsync(string name);
         Task<Response<List<CategoryReadModel>>> GetAllAsync();
+        Task<bool> ExistsAsync(string idOrName);
     }
 }

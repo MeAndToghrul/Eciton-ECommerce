@@ -26,9 +26,10 @@ public static class ServiceRegistration
         services.AddScoped<IEventHandler<UserRegisteredEvent>, UserRegisteredEventHandler>();
         services.AddScoped<IEventHandler<RoleCreatedEvent>, RoleEventHandler>();
         services.AddScoped<IEventHandler<UserEmailConfirmedEvent>, UserEmailConfirmedEventHandler>();
-        services.AddScoped<IEventHandler<CategoryCreatedEvent>, CategoryCreatedEventHandler>();       
+        services.AddScoped<IEventHandler<CategoryCreatedEvent>, CategoryCreatedEventHandler>();
+        services.AddScoped<IEventHandler<CategoryFieldCreatedEvent>, CategoryFieldCreatedEventHandler>();
 
-        
+
         services.AddHostedService<LockoutCleanupTimer>();   
 
         return services;
@@ -38,5 +39,6 @@ public static class ServiceRegistration
     {
         services.AddSingleton<IStorageService, CloudinaryStorageService>();
         services.AddSingleton<ICategoryReadRepository,CategoryReadRepository>();
+        services.AddSingleton<ICategoryFieldReadRepository,CategoryFieldReadRepository>();
     }
 }
