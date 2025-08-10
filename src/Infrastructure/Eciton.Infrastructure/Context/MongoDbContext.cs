@@ -25,4 +25,7 @@ public class MongoDbContext
 
     public IMongoCollection<CategoryFieldReadModel> CategoryFields =>
         _database.GetCollection<CategoryFieldReadModel>("CategoryFields");
+
+    public IMongoCollection<ProductReadModel> Products =>
+        _database.GetCollection<ProductReadModel>("Products");
 }

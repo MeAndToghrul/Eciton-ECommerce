@@ -77,14 +77,11 @@ namespace Eciton.Persistence.Implements
         public async Task<Response<CategoryFieldReadModel>> GetByIdAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
-                return new Response<CategoryFieldReadModel>(ResponseStatusCode.Error, "Category field ID is required.");
+            {
+                return new Response<CategoryFieldReadModel>(ResponseStatusCode.Error, "Id is required.");
+            }
 
-            var response = await _categoryFieldReadRepository.GetByIdAsync(id);
-
-            if (response.Data == null)
-                return new Response<CategoryFieldReadModel>(ResponseStatusCode.NotFound, "Category field not found.");
-
-            return response;
+            return await _categoryFieldReadRepository.GetByIdAsync(id);
         }
 
         public async Task<Response<List<CategoryFieldReadModel>>> GetByCategoryIdAsync(string categoryId)

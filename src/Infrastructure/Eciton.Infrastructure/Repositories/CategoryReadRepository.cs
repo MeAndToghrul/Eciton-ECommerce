@@ -5,7 +5,6 @@ using Eciton.Application.ResponceObject.Enums;
 using Eciton.Infrastructure.Context;
 using MongoDB.Driver;
 namespace Eciton.Infrastructure.Repositories.Read;
-
 public class CategoryReadRepository : ICategoryReadRepository
 {
     private readonly IMongoCollection<CategoryReadModel> _collection;

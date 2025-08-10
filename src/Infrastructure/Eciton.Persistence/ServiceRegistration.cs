@@ -46,6 +46,7 @@ public static class ServiceRegistration
         services.AddScoped<IRateLimitService, RateLimitService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ICategoryFieldService, CategoryFieldService>();
+        services.AddScoped<IProductService, ProductService>();
         services.AddMemoryCache();
 
         services.AddHttpContextAccessor();

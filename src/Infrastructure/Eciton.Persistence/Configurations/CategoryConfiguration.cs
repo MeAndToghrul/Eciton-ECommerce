@@ -15,6 +15,10 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasMaxLength(100)
             .HasColumnType("varchar(100)");
 
+        builder.Property(c => c.CategoryImage)
+            .HasMaxLength(250)
+            .HasColumnType("varchar(250)");
+
         builder.Property(c => c.CreatedAt)
             .HasColumnType("timestamp with time zone")
             .IsRequired();
@@ -22,18 +26,18 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.UpdatedAt)
             .HasColumnType("timestamp with time zone");
 
-        builder.Property(p => p.IsDeleted)
-                .IsRequired()
-                .HasColumnType("boolean");
+        builder.Property(c => c.IsDeleted)
+            .IsRequired()
+            .HasColumnType("boolean");
 
         builder.HasMany(c => c.Fields)
-            .WithOne()
-            .HasForeignKey("CategoryId") 
+            .WithOne(f => f.Category)
+            .HasForeignKey(f => f.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(c => c.Products)
-            .WithOne()
-            .HasForeignKey("CategoryId") 
+            .WithOne(p => p.Category)
+            .HasForeignKey(p => p.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

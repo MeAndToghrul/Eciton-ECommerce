@@ -1,9 +1,7 @@
 ﻿using Eciton.Domain.Entities.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Eciton.Persistence.Configurations;
-
 public class CategoryFieldConfiguration : IEntityTypeConfiguration<CategoryField>
 {
     public void Configure(EntityTypeBuilder<CategoryField> builder)
