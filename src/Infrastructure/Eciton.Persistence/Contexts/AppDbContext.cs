@@ -16,6 +16,10 @@ public class AppDbContext : DbContext
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<AppRole> AppRoles { get; set; }
     public DbSet<AppUser> AppUsers { get; set; }
+    public DbSet<CategoryField> CategoryFields { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Product> Products { get; set; }
+    public DbSet<ProductFeature> ProductFeatures { get; set; }
 
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

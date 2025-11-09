@@ -2,7 +2,6 @@
 using Eciton.Domain.Settings;
 using Eciton.Infrastructure.Mongo.ReadModels;
 using MongoDB.Driver;
-
 namespace Eciton.Infrastructure.Context;
 public class MongoDbContext
 {
@@ -20,4 +19,13 @@ public class MongoDbContext
 
     public IMongoCollection<RoleReadModel> Roles =>
         _database.GetCollection<RoleReadModel>("Roles");
+
+    public IMongoCollection<CategoryReadModel> Categories =>
+        _database.GetCollection<CategoryReadModel>("Categories");
+
+    public IMongoCollection<CategoryFieldReadModel> CategoryFields =>
+        _database.GetCollection<CategoryFieldReadModel>("CategoryFields");
+
+    public IMongoCollection<ProductReadModel> Products =>
+        _database.GetCollection<ProductReadModel>("Products");
 }
